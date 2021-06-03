@@ -1,0 +1,25 @@
+{
+  "name": "constant-fold",
+  "version": "1.0.0",
+  "description": "Constant folding js",
+  "main": "main.ts",
+  "dependencies": {
+    "@types/jscodeshift": "^0.11.0",
+    "babel": "^6.23.0",
+    "babel-plugin-minify-constant-folding": "^0.5.0",
+    "jscodeshift": "^0.12.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.14.3",
+    "@babel/preset-env": "^7.14.4",
+    "@types/jest": "^26.0.23",
+    "babel-jest": "^27.0.2",
+    "jest": "^27.0.4"
+  },
+  "scripts": {
+    "test": "jest",
+    "ex": "jscodeshift -t transforms/constant-fold.ts data/breakthecode.js --dry --print"
+  },
+  "author": "",
+  "license": "ISC"
+}
