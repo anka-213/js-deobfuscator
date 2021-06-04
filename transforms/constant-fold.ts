@@ -2,10 +2,12 @@
 import core, {
   ASTNode,
   ASTPath,
+  Collection,
   Identifier,
   JSCodeshift,
   MemberExpression,
   Pattern,
+  SpreadElement,
   Transform,
   VariableDeclaration,
   VariableDeclarator,
@@ -13,6 +15,8 @@ import core, {
 import { isValidIdentifier } from "@babel/types";
 // import { Collection } from "jscodeshift";
 import { Type } from "ast-types/lib/types";
+import { Scope } from "ast-types/lib/scope";
+// import { Scope } from "ast-types/lib/scope";
 
 const transform: Transform = (file, api, options) => {
   // Alias the jscodeshift API for ease of use.
@@ -110,7 +114,7 @@ const transform: Transform = (file, api, options) => {
     const args = jvd
       .map((x) => x.get("params").map((x) => x, null))
       .filter(checkPath(j.Identifier));
-    console.log(args);
+    // console.log(args);
     args.forEach((vd) => {
       const oldName = vd.value.name;
       const newName = fname + "_arg" + argNr++;
@@ -275,10 +279,134 @@ const transform: Transform = (file, api, options) => {
     // stmts.replace([]);
   });
 
+  // Inline short single return function
+  root
+    .find(j.FunctionDeclaration, {
+      body: { body: [{ type: "ReturnStatement" }] },
+    })
+    .forEach((pth) => {
+      const body = pth.get("body", "body");
+      // Should never happen, since we already test for this
+      if (body.value.length !== 1) return null;
+      const expr1 = body.value[0];
+      if (expr1.type !== "ReturnStatement") return null;
+      const retVal = expr1.argument;
+      const retSrc = j(retVal).toSource();
+      console.log(retSrc, retSrc.length);
+      if (retSrc.length > 30) return;
+
+      const args = pth.value.params;
+      // TODO: Support multiple args
+      if (args[0].type !== "Identifier") return;
+      const argName = args[0].name;
+
+      const vd = pth;
+      const oldName = vd.value.id.name;
+
+      const rootScope = vd.parentPath.scope;
+      const jScope = j(vd.parentPath).closestScope();
+      // const vd = funDecls.at(i);
+      // pth.value.id.name
+      // vd.renameTo("f" + varNr);
+      jScope
+        .find(j.Identifier, { name: oldName })
+        .filter(isVariable(j))
+        .forEach((path) => {
+          // identifier must refer to declared variable
+          let scope = path.scope;
+          while (scope && scope !== rootScope) {
+            if (scope.declares(oldName)) return;
+            scope = scope.parent;
+          }
+          if (!scope) return; // The variable must be declared
+
+          const parent = path.parentPath;
+          if (!checkPath(j.CallExpression)(parent)) return;
+          const pv = parent.value;
+          // TODO: Handle multiple args
+          const myArg = pv.arguments[0];
+
+          // Hack to get a deep clone
+          const newValue = j(j(retVal).toSource())
+            .find(j.ExpressionStatement)
+            .paths()[0].value.expression;
+          // const newValue = retVal;
+
+          // const myArg = parent.value.type
+          // const myValue = j(newValue)
+          //   .find(j.Identifier, { name: argName })
+          //   .replaceWith((_) => myArg);
+          // parent.replace(newValue);
+          path.replace(j.arrowFunctionExpression(args, newValue));
+        });
+    });
+
+  // Substitute into simple immediately evaluated lambda expressions
+  // NOTE: We are not checking if the substitution is safe
+  root
+    .find(j.CallExpression, { callee: { type: "ArrowFunctionExpression" } })
+    .forEach((pth) => {
+      const callee = pth.get("callee");
+      if (!checkPath(j.ArrowFunctionExpression)(callee)) return;
+      const body = callee.value.body;
+      if (j.BlockStatement.check(body)) return;
+      body;
+      const params = callee.value.params;
+      if (!params.every((x): x is Identifier => j.Identifier.check(x))) return;
+      params;
+
+      const args = pth.value.arguments;
+
+      // if (params.length !== args.length) return
+      const jbody = j(callee.get("body"));
+
+      const rootScope = callee.get("body").scope;
+      params.forEach((param, i) => {
+        const arg = args[i] ?? j.identifier("undefined");
+        if (j.SpreadElement.check(arg)) return;
+
+        withIdent(param.name, jbody, rootScope, (id) => {
+          id.replace(arg);
+        });
+      });
+      pth.replace(body);
+
+      // console.log(pth);
+    });
+  // fun.value.body.body
+
+  // TODO: Learn subtraction
+  // TODO: ![] => false,  !![] => true
+  // TODO: a && b => if (a) { b }
+  // TODO: a , b => { a ; b }
+
   console.log(varisvar);
   return root.toSource();
   // decl.paths()[0]
 };
+
+function withIdent(
+  name: string,
+  haystack: Collection,
+  rootScope: Scope,
+  callback: (path: ASTPath<Identifier>) => void
+) {
+  const j = core;
+
+  haystack
+    .find(j.Identifier, { name: name })
+    .filter(isVariable(j))
+    .forEach((path) => {
+      // identifier must refer to declared variable
+      let scope = path.scope;
+      while (scope && scope !== rootScope) {
+        if (scope.declares(name)) return;
+        scope = scope.parent;
+      }
+      if (!scope) return; // The variable must be declared
+      callback(path);
+    });
+}
 
 const isVariable = (j: JSCodeshift) => (path: ASTPath<Identifier>) => {
   const j = core;
