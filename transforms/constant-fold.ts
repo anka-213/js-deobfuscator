@@ -189,14 +189,14 @@ const transform: Transform = (file, api, options) => {
 
     second_last.value;
     // We only support a single declarator for now
-    if (second_last.value.declarations.length != 1) return null
+    if (second_last.value.declarations.length != 1) return null;
     // const varDecl = second_last.value.declarations[0];
-    const varDecl = second_last.get("declarations", 0)
+    const varDecl = second_last.get("declarations", 0);
     if (!checkPath(j.VariableDeclarator)(varDecl)) return;
     if (varDecl.value.id.type !== "Identifier") return;
     const oldName = varDecl.value.id.name;
     const scope = j(second_last).closestScope();
-    const vd = varDecl
+    const vd = varDecl;
     // scope.find(j.Identifier, {name: last1.value.id.name})
 
     const newValue = vd.value.init;
@@ -223,6 +223,7 @@ const transform: Transform = (file, api, options) => {
         if (!scope) return; // The variable must be declared
         path.replace(newValue);
       });
+    vd.prune();
 
     // let foo = second_last.get("declarations", 0);
     // second_last.value.declarations;
@@ -251,7 +252,7 @@ const transform: Transform = (file, api, options) => {
 };
 
 const isVariable = (j: JSCodeshift) => (path: ASTPath<Identifier>) => {
-  const j = core
+  const j = core;
   // ignore non-variables
   const parent: unknown = path.parent.node;
 
