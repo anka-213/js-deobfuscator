@@ -35,7 +35,6 @@ const transform: Transform = (file, api, options) => {
     id: { type: "Identifier" },
     init: { type: "ArrayExpression" },
   });
-  decl.renameTo("hello");
   console.log(decl);
   // const dotExprs = root.find(j.MemberExpression, x => x?.property?.type == "Literal" && isValidIdentifier(x?.property.value))
   const dotExprs = root
