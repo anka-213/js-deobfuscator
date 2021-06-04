@@ -1,0 +1,36 @@
+diff --git a/node_modules/ast-types/lib/node-path.d.ts b/node_modules/ast-types/lib/node-path.d.ts
+index b8b11d1..b48b959 100644
+--- a/node_modules/ast-types/lib/node-path.d.ts
++++ b/node_modules/ast-types/lib/node-path.d.ts
+@@ -5,8 +5,11 @@ import { Scope } from "./scope";
+ export interface NodePath<N = any, V = any> extends Path<V> {
+     node: N;
+     parent: any;
+-    scope: any;
++    scope: Scope | null;
+     replace: Path['replace'];
++    get<K extends keyof V>(name: K): NodePath<V[K],V[K]>;
++    get<K1 extends keyof V, K2 extends keyof V[K1]>(name: K1, name2 : K2): NodePath<V[K1][K2],V[K1][K2]>;
++    // get(...names: string[]): NodePath<any>;
+     prune(...args: any[]): any;
+     _computeNode(): any;
+     _computeParent(): any;
+diff --git a/node_modules/ast-types/lib/path.d.ts b/node_modules/ast-types/lib/path.d.ts
+index feef1f1..34c8b8d 100644
+--- a/node_modules/ast-types/lib/path.d.ts
++++ b/node_modules/ast-types/lib/path.d.ts
+@@ -3,10 +3,12 @@ import { ASTNode } from "./types";
+ export interface Path<V = any> {
+     value: V;
+     parentPath: any;
+-    name: any;
++    name: string;
+     __childCache: object | null;
+     getValueProperty(name: any): any;
+-    get(...names: any[]): any;
++    get<K extends keyof V>(name: K): Path<V[K]>;
++    get<K1 extends keyof V, K2 extends keyof V[K1]>(name: K1, name2 : K2): Path<V[K1][K2]>;
++    get(...names: string[]): Path<any>;
+     each(callback: any, context: any): any;
+     map(callback: any, context: any): any;
+     filter(callback: any, context: any): any;

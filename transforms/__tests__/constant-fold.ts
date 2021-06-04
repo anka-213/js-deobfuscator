@@ -2,11 +2,7 @@
 import { defineTest } from "jscodeshift/dist/testUtils";
 
 describe("implicit-icons-to-explicit-imports", () => {
-  defineTest(
-    __dirname,
-    "constant-fold",
-    null,
-    `breakthecode`,
-    { parser: "js" }
-  );
+  defineTest(__dirname, "constant-fold", null, `breakthecode`, {
+    parser: "babel",
+  });
 });

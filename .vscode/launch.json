@@ -5,16 +5,36 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "type": "pwa-node",
-            "request": "launch",
             "name": "Launch Program",
+            "args": [
+                "-t",
+                "transforms/constant-fold.ts",
+                "data/breakthecode.js",
+                "--dry",
+                "--print",
+            ],
+            "program": "${workspaceFolder}/node_modules/.bin/jscodeshift",
+            "request": "launch",
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "program": "${workspaceFolder}/transforms/constant-fold.ts",
-            "outFiles": [
-                "${workspaceFolder}/**/*.js"
-            ]
+            "type": "pwa-node"
         }
+
+
+
+
+        // {
+        //     "type": "pwa-node",
+        //     "request": "launch",
+        //     "name": "Launch Program",
+        //     "skipFiles": [
+        //         "<node_internals>/**"
+        //     ],
+        //     "program": "${workspaceFolder}/transforms/constant-fold.ts",
+        //     "outFiles": [
+        //         "${workspaceFolder}/**/*.js"
+        //     ]
+        // }
     ]
 }
