@@ -1,8 +1,7 @@
 'use strict';
 var v1 = ['2XDTygo', '1079yilIzd', '368168VvQIgG', '14081gJOvPZ', 'getAttribute', '208866QssNBc', '/puzzle-new', 'cooldown', 'response', 'remove', 'modal-open', 'status', 'flags', '1512231DKtOVj', 'then', 'loading', 'error', 'disableSubmit', '3171IGRaWO', '.answer-popup-success', '127LGCEKU', '680575VSjskW', 'hidden', '#app', 'input', 'add', 'data', 'application/json', '1138771DnkNzm', 'querySelector'];
 function f1(f1_arg1, f1_arg2) {
-    f1_arg1 = f1_arg1 - 328;
-    return v1[f1_arg1];
+    return v1[f1_arg1 - 328];
 }
 (function(anon1_arg1, anon1_arg2) {
     while (!![]) {

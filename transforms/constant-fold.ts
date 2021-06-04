@@ -195,7 +195,6 @@ const transform: Transform = (file, api, options) => {
     if (!checkPath(j.VariableDeclarator)(varDecl)) return;
     if (varDecl.value.id.type !== "Identifier") return;
     const oldName = varDecl.value.id.name;
-    const scope = j(second_last).closestScope();
     const vd = varDecl;
     // scope.find(j.Identifier, {name: last1.value.id.name})
 
@@ -224,6 +223,37 @@ const transform: Transform = (file, api, options) => {
         path.replace(newValue);
       });
     vd.prune();
+
+    // Part 2: Resolve expression statement "a = a + 1"
+    const es = stmts.get(stmts.value.length - 2);
+    if (!checkPath(j.ExpressionStatement)(es)) return null;
+    const ae = es.get("expression");
+    if (!checkPath(j.AssignmentExpression)(ae)) return null;
+    // Not sure if this could happen
+    if (ae.scope !== rootScope) return null;
+    const l = ae.get("left");
+    if (!checkPath(j.Identifier)(l)) return null;
+    const oldName2 = l.value.name;
+    const r = ae.get("right");
+    const newValue2 = r;
+
+    const ret = stmts.get(stmts.value.length - 1);
+    if (!checkPath(j.ReturnStatement)(ret)) return null;
+    j(ret)
+      .find(j.Identifier, { name: oldName2 })
+      .filter(isVariable(j))
+      .forEach((path) => {
+        let scope = path.scope;
+        while (scope && scope !== rootScope) {
+          if (scope.declares(oldName)) return;
+          scope = scope.parent;
+        }
+        if (!scope) return; // The variable must be declared
+        path.replace(newValue2.value);
+      });
+    es.prune();
+
+    // TODO: Make this into a loop and extract functions
 
     // let foo = second_last.get("declarations", 0);
     // second_last.value.declarations;
