@@ -366,7 +366,7 @@ const transform: Transform = (file, api, options) => {
         const arg = args[i] ?? j.identifier("undefined");
         if (j.SpreadElement.check(arg)) return;
 
-        withIdent(param.name, jbody, rootScope, (id) => {
+        findIdentifier(param.name, jbody, rootScope).forEach((id) => {
           id.replace(arg);
         });
       });
@@ -415,7 +415,7 @@ const transform: Transform = (file, api, options) => {
         const arg = args[i] ?? j.identifier("undefined");
         if (j.SpreadElement.check(arg)) return;
 
-        withIdent(param.name, jbody, rootScope, (id) => {
+        findIdentifier(param.name, jbody, rootScope).forEach((id) => {
           id.replace(arg);
         });
       });
@@ -451,26 +451,22 @@ const transform: Transform = (file, api, options) => {
   // decl.paths()[0]
 };
 
-function withIdent(
-  name: string,
-  haystack: Collection,
-  rootScope: Scope,
-  callback: (path: ASTPath<Identifier>) => void
-) {
+function findIdentifier(name: string, haystack: Collection, rootScope: Scope) {
   const j = core;
 
-  haystack
+  return haystack
     .find(j.Identifier, { name: name })
     .filter(isVariable(j))
-    .forEach((path) => {
+    .filter((path) => {
       // identifier must refer to declared variable
       let scope = path.scope;
       while (scope && scope !== rootScope) {
-        if (scope.declares(name)) return;
+        if (scope.declares(name)) return false;
         scope = scope.parent;
       }
-      if (!scope) return; // The variable must be declared
-      callback(path);
+      if (!scope) return false; // The variable must be declared
+      // callback(path);
+      return true;
     });
 }
 
