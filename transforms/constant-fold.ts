@@ -464,6 +464,9 @@ const transform: Transform = (file, api, options) => {
         // TODO: Check that newValue is valid
         parent.replace(newValue);
       });
+      if (findIdentifier(arrayName, jScope, rootScope).length == 1) {
+        pth.prune();
+      }
     });
 
   // Transform the newly formed foo["bar"] into foo.bar

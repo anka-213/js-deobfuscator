@@ -1,6 +1,4 @@
 'use strict';
-// Version with the function for rotating the array already (manually) executed
-var v1 = ["680575VSjskW", "hidden", "#app", "input", "add", "data", "application/json", "1138771DnkNzm", "querySelector", "2XDTygo", "1079yilIzd", "368168VvQIgG", "14081gJOvPZ", "getAttribute", "208866QssNBc", "/puzzle-new", "cooldown", "response", "remove", "modal-open", "status", "flags", "1512231DKtOVj", "then", "loading", "error", "disableSubmit", "3171IGRaWO", ".answer-popup-success", "127LGCEKU"]
 var v2 = new Vue({
     'el': "#app",
     'data': {
