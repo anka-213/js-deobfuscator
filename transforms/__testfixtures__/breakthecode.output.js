@@ -3,19 +3,19 @@ var v1 = ['2XDTygo', '1079yilIzd', '368168VvQIgG', '14081gJOvPZ', 'getAttribute'
 function f1(f1_arg1, f1_arg2) {
     return v1[f1_arg1 - 328];
 }
-(function(anon1_arg1, anon1_arg2) {
+{
     while (!![]) {
         try {
             var v5 = -parseInt(v1[22]) + parseInt(v1[7]) + parseInt(v1[0]) + -parseInt(v1[29]) * parseInt(v1[12]) + -parseInt(v1[14]) + -parseInt(v1[9]) * parseInt(v1[11]) + -parseInt(v1[10]) * -parseInt(v1[27]);
-            if (v5 === anon1_arg2)
+            if (v5 === 995135)
                 break;
             else
-                anon1_arg1.push(anon1_arg1.shift());
+                v1.push(v1.shift());
         } catch (_0x9a3e53) {
-            anon1_arg1.push(anon1_arg1.shift());
+            v1.push(v1.shift());
         }
     }
-}(v1, 995135));
+}
 var v6 = new Vue({
     'el': v1[2],
     'data': {

@@ -280,6 +280,7 @@ const transform: Transform = (file, api, options) => {
   });
 
   // Inline short single return function
+  // NOTE: We are not verifying that the scope is the same for the variables after inlining
   root
     .find(j.FunctionDeclaration, {
       body: { body: [{ type: "ReturnStatement" }] },
@@ -391,11 +392,43 @@ const transform: Transform = (file, api, options) => {
       return j.literal(left.value - right.value);
     });
 
+  // Substitute into simple immediately evaluated function expressions
+  // NOTE: We are not checking if the substitution is safe
+  // e.g. if we are mutating the local copy of the variables
+  root
+    .find(j.CallExpression, { callee: { type: "FunctionExpression" } })
+    .forEach((pth) => {
+      if (!checkPath(j.ExpressionStatement)(pth.parentPath)) return;
+      const callee = pth.get("callee");
+      if (!checkPath(j.FunctionExpression)(callee)) return;
+      const body = callee.value.body;
+      const params = callee.value.params;
+      if (!params.every((x): x is Identifier => j.Identifier.check(x))) return;
+
+      const args = pth.value.arguments;
+
+      // if (params.length !== args.length) return
+      const jbody = j(callee.get("body"));
+
+      const rootScope = callee.get("body").scope;
+      params.forEach((param, i) => {
+        const arg = args[i] ?? j.identifier("undefined");
+        if (j.SpreadElement.check(arg)) return;
+
+        withIdent(param.name, jbody, rootScope, (id) => {
+          id.replace(arg);
+        });
+      });
+      pth.parentPath.replace(body);
+
+      // console.log(pth);
+    });
+
   // DONE: Learn subtraction
   // TODO: ![] => false,  !![] => true
   // TODO: a && b => if (a) { b }
   // TODO: a , b => { a ; b }
-  // TODO: Apply the non-lambda function to its arguments as well (maybe just FunctionExpression is sufficient, but we need to check that we are in an ExpressionStatement too)
+  // DONE: Apply the non-lambda function to its arguments as well (maybe just FunctionExpression is sufficient, but we need to check that we are in an ExpressionStatement too)
   // TODO: Write some real unit tests (should probably have started with this)
   // TODO: Take a shortcut and run the first part manually and put it in a separate file, so we can figure out what's happening without having to run the complicated code
 
