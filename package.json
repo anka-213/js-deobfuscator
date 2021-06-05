@@ -25,7 +25,10 @@
     "postinstall": "patch-package",
     "prepare": "npx crlf --set=LF node_modules/.bin/jscodeshift",
     "test": "jest",
-    "ex": "jscodeshift -t transforms/constant-fold.ts data/breakthecode.js --dry --print"
+    "ex": "jscodeshift -t transforms/constant-fold.ts data/breakthecode.js --dry --print",
+    "updateTest1": "/bin/cp transforms/__testfixtures__/breakthecode.{input,output}.js ; yarn jscodeshift -t transforms/constant-fold.ts transforms/__testfixtures__/breakthecode.output.js",
+    "updateTest2": "/bin/cp transforms/__testfixtures__/breakthecode.simplified.{input,output}.js ; yarn jscodeshift -t transforms/constant-fold.ts transforms/__testfixtures__/breakthecode.simplified.output.js"
+
   },
   "author": "",
   "license": "ISC"
