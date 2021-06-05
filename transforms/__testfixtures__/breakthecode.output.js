@@ -6,7 +6,7 @@ function f1(f1_arg1, f1_arg2) {
 (function(anon1_arg1, anon1_arg2) {
     while (!![]) {
         try {
-            var v5 = -parseInt(v1[350 - 328]) + parseInt(v1[335 - 328]) + parseInt(v1[328 - 328]) + -parseInt(v1[357 - 328]) * parseInt(v1[340 - 328]) + -parseInt(v1[342 - 328]) + -parseInt(v1[337 - 328]) * parseInt(v1[339 - 328]) + -parseInt(v1[338 - 328]) * -parseInt(v1[355 - 328]);
+            var v5 = -parseInt(v1[22]) + parseInt(v1[7]) + parseInt(v1[0]) + -parseInt(v1[29]) * parseInt(v1[12]) + -parseInt(v1[14]) + -parseInt(v1[9]) * parseInt(v1[11]) + -parseInt(v1[10]) * -parseInt(v1[27]);
             if (v5 === anon1_arg2)
                 break;
             else
@@ -17,7 +17,7 @@ function f1(f1_arg1, f1_arg2) {
     }
 }(v1, 995135));
 var v6 = new Vue({
-    'el': v1[330 - 328],
+    'el': v1[2],
     'data': {
         'input': '',
         'flags': {
@@ -28,33 +28,33 @@ var v6 = new Vue({
     },
     'computed': {
         'disableSubmit': function disableSubmit() {
-            return this.input == '' || this.flags[v1[352 - 328]] || this[v1[349 - 328]][v1[344 - 328]];
+            return this.input == '' || this.flags[v1[24]] || this[v1[21]][v1[16]];
         }
     },
     'methods': {
         'submit': function submit() {
             var v9 = this;
-            !this[v1[354 - 328]] && this[v1[331 - 328]] !== '' && (this[v1[349 - 328]][v1[353 - 328]] = ![],
-            this[v1[349 - 328]].loading = !![],
+            !this[v1[26]] && this[v1[3]] !== '' && (this[v1[21]][v1[25]] = ![],
+            this[v1[21]].loading = !![],
             setTimeout(function() {
-                axios.post(v1[343 - 328], {
-                    'answer': v9[v1[331 - 328]]
+                axios.post(v1[15], {
+                    'answer': v9[v1[3]]
                 }, {
                     'headers': {
-                        'X-CSRF-TOKEN': document[v1[336 - 328]]('meta[name=\x22csrf-token\x22]')[v1[341 - 328]]('content'),
-                        'Content-Type': v1[334 - 328]
+                        'X-CSRF-TOKEN': document[v1[8]]('meta[name=\x22csrf-token\x22]')[v1[13]]('content'),
+                        'Content-Type': v1[6]
                     }
-                })[v1[351 - 328]](function(anon3_arg1) {
-                    anon3_arg1.data && (v9.flags[v1[352 - 328]] = ![],
-                    document[v1[336 - 328]]('html,\x20body').classList[v1[332 - 328]](v1[347 - 328]),
-                    document[v1[336 - 328]]('.answer-popup__div').innerHTML = anon3_arg1[v1[333 - 328]].content,
-                    document[v1[336 - 328]](v1[356 - 328]).classList[v1[346 - 328]](v1[329 - 328]));
+                })[v1[23]](function(anon3_arg1) {
+                    anon3_arg1.data && (v9.flags[v1[24]] = ![],
+                    document[v1[8]]('html,\x20body').classList[v1[4]](v1[19]),
+                    document[v1[8]]('.answer-popup__div').innerHTML = anon3_arg1[v1[5]].content,
+                    document[v1[8]](v1[28]).classList[v1[18]](v1[1]));
                 })['catch'](function(anon4_arg1) {
-                    anon4_arg1[v1[345 - 328]] && ((anon4_arg1.response[v1[348 - 328]] == 400 || anon4_arg1[v1[345 - 328]][v1[348 - 328]] == 422 || anon4_arg1[v1[345 - 328]][v1[348 - 328]] == 429) && (v9[v1[349 - 328]][v1[352 - 328]] = ![],
-                    v9.flags[v1[353 - 328]] = !![],
-                    v9[v1[349 - 328]][v1[344 - 328]] = !![],
+                    anon4_arg1[v1[17]] && ((anon4_arg1.response[v1[20]] == 400 || anon4_arg1[v1[17]][v1[20]] == 422 || anon4_arg1[v1[17]][v1[20]] == 429) && (v9[v1[21]][v1[24]] = ![],
+                    v9.flags[v1[25]] = !![],
+                    v9[v1[21]][v1[16]] = !![],
                     setTimeout(function() {
-                        v9[v1[349 - 328]][v1[344 - 328]] = ![];
+                        v9[v1[21]][v1[16]] = ![];
                     }, 5000)));
                 });
             }, 1500));

@@ -375,10 +375,29 @@ const transform: Transform = (file, api, options) => {
     });
   // fun.value.body.body
 
-  // TODO: Learn subtraction
+  // Subtraction
+  root
+    .find(j.BinaryExpression, {
+      operator: "-",
+      left: { type: "Literal" },
+      right: { type: "Literal" },
+    })
+    .replaceWith(({ value }) => {
+      const { left, right } = value;
+      if (left.type !== "Literal" || right.type !== "Literal") return value;
+      if (typeof left.value !== "number" || typeof right.value !== "number")
+        return value;
+
+      return j.literal(left.value - right.value);
+    });
+
+  // DONE: Learn subtraction
   // TODO: ![] => false,  !![] => true
   // TODO: a && b => if (a) { b }
   // TODO: a , b => { a ; b }
+  // TODO: Apply the non-lambda function to its arguments as well (maybe just FunctionExpression is sufficient, but we need to check that we are in an ExpressionStatement too)
+  // TODO: Write some real unit tests (should probably have started with this)
+  // TODO: Take a shortcut and run the first part manually and put it in a separate file, so we can figure out what's happening without having to run the complicated code
 
   console.log(varisvar);
   return root.toSource();
