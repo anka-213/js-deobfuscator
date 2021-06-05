@@ -2,7 +2,7 @@
 // Version with the function for rotating the array already (manually) executed
 var v1 = ["680575VSjskW", "hidden", "#app", "input", "add", "data", "application/json", "1138771DnkNzm", "querySelector", "2XDTygo", "1079yilIzd", "368168VvQIgG", "14081gJOvPZ", "getAttribute", "208866QssNBc", "/puzzle-new", "cooldown", "response", "remove", "modal-open", "status", "flags", "1512231DKtOVj", "then", "loading", "error", "disableSubmit", "3171IGRaWO", ".answer-popup-success", "127LGCEKU"]
 var v2 = new Vue({
-    'el': v1[2],
+    'el': "#app",
     'data': {
         'input': '',
         'flags': {
@@ -13,33 +13,33 @@ var v2 = new Vue({
     },
     'computed': {
         'disableSubmit': function disableSubmit() {
-            return this.input == '' || this.flags[v1[24]] || this[v1[21]][v1[16]];
+            return this.input == '' || this.flags["loading"] || this["flags"]["cooldown"];
         }
     },
     'methods': {
         'submit': function submit() {
             var v3 = this;
-            !this[v1[26]] && this[v1[3]] !== '' && (this[v1[21]][v1[25]] = false,
-            this[v1[21]].loading = true,
+            !this["disableSubmit"] && this["input"] !== '' && (this["flags"]["error"] = false,
+            this["flags"].loading = true,
             setTimeout(function() {
-                axios.post(v1[15], {
-                    'answer': v3[v1[3]]
+                axios.post("/puzzle-new", {
+                    'answer': v3["input"]
                 }, {
                     'headers': {
-                        'X-CSRF-TOKEN': document[v1[8]]('meta[name=\x22csrf-token\x22]')[v1[13]]('content'),
-                        'Content-Type': v1[6]
+                        'X-CSRF-TOKEN': document["querySelector"]('meta[name=\x22csrf-token\x22]')["getAttribute"]('content'),
+                        'Content-Type': "application/json"
                     }
-                })[v1[23]](function(anon2_arg1) {
-                    anon2_arg1.data && (v3.flags[v1[24]] = false,
-                    document[v1[8]]('html,\x20body').classList[v1[4]](v1[19]),
-                    document[v1[8]]('.answer-popup__div').innerHTML = anon2_arg1[v1[5]].content,
-                    document[v1[8]](v1[28]).classList[v1[18]](v1[1]));
+                })["then"](function(anon2_arg1) {
+                    anon2_arg1.data && (v3.flags["loading"] = false,
+                    document["querySelector"]('html,\x20body').classList["add"]("modal-open"),
+                    document["querySelector"]('.answer-popup__div').innerHTML = anon2_arg1["data"].content,
+                    document["querySelector"](".answer-popup-success").classList["remove"]("hidden"));
                 })['catch'](function(anon3_arg1) {
-                    anon3_arg1[v1[17]] && ((anon3_arg1.response[v1[20]] == 400 || anon3_arg1[v1[17]][v1[20]] == 422 || anon3_arg1[v1[17]][v1[20]] == 429) && (v3[v1[21]][v1[24]] = false,
-                    v3.flags[v1[25]] = true,
-                    v3[v1[21]][v1[16]] = true,
+                    anon3_arg1["response"] && ((anon3_arg1.response["status"] == 400 || anon3_arg1["response"]["status"] == 422 || anon3_arg1["response"]["status"] == 429) && (v3["flags"]["loading"] = false,
+                    v3.flags["error"] = true,
+                    v3["flags"]["cooldown"] = true,
                     setTimeout(function() {
-                        v3[v1[21]][v1[16]] = false;
+                        v3["flags"]["cooldown"] = false;
                     }, 5000)));
                 });
             }, 1500));

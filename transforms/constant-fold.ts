@@ -439,12 +439,39 @@ const transform: Transform = (file, api, options) => {
     })
     .replaceWith((x) => j.literal(true));
 
+  // Substitute array indexing with the actual values
+  // TODO: Don't do this if the array would be mutated
+  root
+    .find(j.VariableDeclarator, {
+      type: "VariableDeclarator",
+      id: { type: "Identifier" },
+      init: { type: "ArrayExpression" },
+    })
+    .forEach((pth) => {
+      if (pth.value.id.type !== "Identifier") return;
+      const arrayName = pth.value.id.name;
+      if (pth.value.init.type !== "ArrayExpression") return;
+      const values = pth.value.init.elements;
+
+      const rootScope = pth.scope;
+      const jScope = j(pth).closestScope();
+      findIdentifier(arrayName, jScope, rootScope).forEach((arrUse) => {
+        const parent = arrUse.parentPath;
+        if (!checkPath(j.MemberExpression)(parent)) return;
+        const idx = parent.value.property;
+        if (idx.type !== "Literal" || typeof idx.value !== "number") return;
+        const newValue = values[idx.value];
+        // TODO: Check that newValue is valid
+        parent.replace(newValue);
+      });
+    });
+
   // DONE: Learn subtraction
   // TODO: a && b => if (a) { b }
   // TODO: a , b => { a ; b }
   // DONE: Apply the non-lambda function to its arguments as well (maybe just FunctionExpression is sufficient, but we need to check that we are in an ExpressionStatement too)
   // TODO: Write some real unit tests (should probably have started with this)
-  // TODO: Take a shortcut and run the first part manually and put it in a separate file, so we can figure out what's happening without having to run the complicated code
+  // DONE: Take a shortcut and run the first part manually and put it in a separate file, so we can figure out what's happening without having to run the complicated code
 
   console.log(varisvar);
   return root.toSource();
