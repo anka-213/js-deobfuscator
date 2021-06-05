@@ -4,7 +4,7 @@ function f1(f1_arg1, f1_arg2) {
     return v1[f1_arg1 - 328];
 }
 {
-    while (!![]) {
+    while (true) {
         try {
             var v5 = -parseInt(v1[22]) + parseInt(v1[7]) + parseInt(v1[0]) + -parseInt(v1[29]) * parseInt(v1[12]) + -parseInt(v1[14]) + -parseInt(v1[9]) * parseInt(v1[11]) + -parseInt(v1[10]) * -parseInt(v1[27]);
             if (v5 === 995135)
@@ -21,9 +21,9 @@ var v6 = new Vue({
     'data': {
         'input': '',
         'flags': {
-            'cooldown': ![],
-            'loading': ![],
-            'error': ![]
+            'cooldown': false,
+            'loading': false,
+            'error': false
         }
     },
     'computed': {
@@ -34,8 +34,8 @@ var v6 = new Vue({
     'methods': {
         'submit': function submit() {
             var v9 = this;
-            !this[v1[26]] && this[v1[3]] !== '' && (this[v1[21]][v1[25]] = ![],
-            this[v1[21]].loading = !![],
+            !this[v1[26]] && this[v1[3]] !== '' && (this[v1[21]][v1[25]] = false,
+            this[v1[21]].loading = true,
             setTimeout(function() {
                 axios.post(v1[15], {
                     'answer': v9[v1[3]]
@@ -45,16 +45,16 @@ var v6 = new Vue({
                         'Content-Type': v1[6]
                     }
                 })[v1[23]](function(anon3_arg1) {
-                    anon3_arg1.data && (v9.flags[v1[24]] = ![],
+                    anon3_arg1.data && (v9.flags[v1[24]] = false,
                     document[v1[8]]('html,\x20body').classList[v1[4]](v1[19]),
                     document[v1[8]]('.answer-popup__div').innerHTML = anon3_arg1[v1[5]].content,
                     document[v1[8]](v1[28]).classList[v1[18]](v1[1]));
                 })['catch'](function(anon4_arg1) {
-                    anon4_arg1[v1[17]] && ((anon4_arg1.response[v1[20]] == 400 || anon4_arg1[v1[17]][v1[20]] == 422 || anon4_arg1[v1[17]][v1[20]] == 429) && (v9[v1[21]][v1[24]] = ![],
-                    v9.flags[v1[25]] = !![],
-                    v9[v1[21]][v1[16]] = !![],
+                    anon4_arg1[v1[17]] && ((anon4_arg1.response[v1[20]] == 400 || anon4_arg1[v1[17]][v1[20]] == 422 || anon4_arg1[v1[17]][v1[20]] == 429) && (v9[v1[21]][v1[24]] = false,
+                    v9.flags[v1[25]] = true,
+                    v9[v1[21]][v1[16]] = true,
                     setTimeout(function() {
-                        v9[v1[21]][v1[16]] = ![];
+                        v9[v1[21]][v1[16]] = false;
                     }, 5000)));
                 });
             }, 1500));

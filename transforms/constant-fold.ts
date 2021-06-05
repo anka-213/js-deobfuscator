@@ -424,8 +424,22 @@ const transform: Transform = (file, api, options) => {
       // console.log(pth);
     });
 
+  // DONE: ![] => false,  !![] => true
+  root
+    .find(j.UnaryExpression, {
+      operator: "!",
+      argument: { type: "ArrayExpression" },
+    })
+    .replaceWith((x) => j.literal(false));
+
+  root
+    .find(j.UnaryExpression, {
+      operator: "!",
+      argument: { type: "Literal", value: false },
+    })
+    .replaceWith((x) => j.literal(true));
+
   // DONE: Learn subtraction
-  // TODO: ![] => false,  !![] => true
   // TODO: a && b => if (a) { b }
   // TODO: a , b => { a ; b }
   // DONE: Apply the non-lambda function to its arguments as well (maybe just FunctionExpression is sufficient, but we need to check that we are in an ExpressionStatement too)
