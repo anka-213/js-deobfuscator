@@ -466,6 +466,27 @@ const transform: Transform = (file, api, options) => {
       });
     });
 
+  // Transform the newly formed foo["bar"] into foo.bar
+  const dotExprs2 = root
+    .find(
+      j.MemberExpression,
+      ({ property }) =>
+        property.type == "Literal" &&
+        // property.computed &&
+        isValidIdentifier(property.value)
+    )
+    .replaceWith((pth) => {
+      const { object, property } = pth.node;
+      let ans: MemberExpression = pth.node;
+      // console.log(ans);
+      if (property.type === "Literal" && typeof property.value === "string") {
+        ans = j.memberExpression(object, j.identifier(property.value));
+      }
+      // console.log(ans);
+      return ans;
+    });
+  console.log(`Transformed ${dotExprs2.length} member-expressions`);
+
   // DONE: Learn subtraction
   // TODO: a && b => if (a) { b }
   // TODO: a , b => { a ; b }
