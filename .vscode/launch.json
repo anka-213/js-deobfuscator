@@ -20,6 +20,41 @@
             ],
             "type": "pwa-node"
         }
+        ,
+        {
+            "name": "New example",
+            "args": [
+                "-t",
+                "transforms/constant-fold.ts",
+                "/Users/anka/tmp/portingkit/header.js",
+                "--dry",
+                "--print",
+            ],
+            "program": "${workspaceFolder}/node_modules/.bin/jscodeshift",
+            "request": "launch",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "type": "pwa-node"
+        }
+        ,
+        {
+            "name": "Full example",
+            "args": [
+                
+                "-t",
+                "transforms/constant-fold.ts",
+                "/Users/anka/tmp/portingkit/appo/app.js",
+                "--dry",
+                "--print",
+            ],
+            "program": "${workspaceFolder}/node_modules/.bin/jscodeshift",
+            "request": "launch",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "type": "pwa-node"
+        }
 
 
 
