@@ -3,6 +3,7 @@ import core, {
   ASTNode,
   ASTPath,
   Collection,
+  ExpressionStatement,
   Identifier,
   JSCodeshift,
   MemberExpression,
@@ -86,15 +87,15 @@ const transform: Transform = (file, api, options) => {
     fstArr.get("init").replace(newArray);
     console.log(topLevel.map((x) => j(x).toSource()));
 
-    // const transformers = topLevel.filter<ASTPath<ExpressionStatement>>(
-    //   checkPath(j.ExpressionStatement)
-    // );
-    // const transformer = transformers.find(
-    //   (x) => x.node.expression.type == "CallExpression"
-    // );
-    // if (!transformer) return;
-    // console.log(transformer);
-    // transformer.prune();
+    const transformers = topLevel.filter<ASTPath<ExpressionStatement>>(
+      checkPath(j.ExpressionStatement)
+    );
+    const transformer = transformers.find(
+      (x) => x.node.expression.type == "CallExpression"
+    );
+    if (!transformer) return;
+    console.log(transformer);
+    transformer.prune();
   }
   evalArray(decl);
 
