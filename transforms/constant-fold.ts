@@ -35,8 +35,8 @@ const transform: Transform = (file, api, options) => {
     .replaceWith((nodePath) => {
       const { node } = nodePath;
       return j.literal(node.value);
-    });
-  console.log(`Transformed ${lits.length} numbers`);
+    }).length;
+  console.log(`Transformed ${lits} numbers`);
   // const myArr = "_0x2889";
   const decl = root.find(j.VariableDeclarator, {
     type: "VariableDeclarator",
@@ -157,8 +157,8 @@ const transform: Transform = (file, api, options) => {
       }
       // console.log(ans);
       return ans;
-    });
-  console.log(`Transformed ${dotExprs.length} member-expressions`);
+    }).length;
+  console.log(`Transformed ${dotExprs} member-expressions`);
 
   // Rename variables
   {
@@ -239,6 +239,7 @@ const transform: Transform = (file, api, options) => {
         });
     });
   });
+  console.log(`Renamed arguments for ${funDeclsA.length} functions`);
 
   // Remove aliases like "var foo = bar;" and replace foo with bar
   const varisvar = root
@@ -280,8 +281,8 @@ const transform: Transform = (file, api, options) => {
           path.get("name").replace(newName);
         });
       vd.prune();
-    });
-  console.log(`Inlined ${varisvar.length} aliases`);
+    }).length;
+  console.log(`Inlined ${varisvar} aliases`);
   // Simplify function return
   // const funs = root.find(j.FunctionDeclaration,{expression: false, body: {type: "BlockStatement"}})
   // let funBod = root.find(j.FunctionDeclaration).paths()[0].value.body.body
