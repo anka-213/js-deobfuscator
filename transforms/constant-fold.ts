@@ -17,6 +17,7 @@ import { isValidIdentifier } from "@babel/types";
 import { Type } from "ast-types/lib/types";
 import { Scope } from "ast-types/lib/scope";
 // import { Scope } from "ast-types/lib/scope";
+import safeEval from "safe-eval";
 
 const transform: Transform = (file, api, options) => {
   // Alias the jscodeshift API for ease of use.
@@ -39,6 +40,64 @@ const transform: Transform = (file, api, options) => {
     id: { type: "Identifier" },
     init: { type: "ArrayExpression" },
   });
+
+  function evalArray(dcl: Collection<VariableDeclarator>) {
+    if (dcl.length == 0) return;
+    const fstArr = dcl.paths()[0];
+    const fsn = fstArr.node;
+
+    if (!j.Identifier.check(fsn.id)) return;
+    const name = fsn.id.name;
+    // This should be the first line of a program
+    if (fstArr.parent.parent.node.type != "Program") return;
+    // if (fstArr.parent.name != 0) return;
+
+    console.log("ready");
+
+    // Find all uses of array
+    const uses = root.find(j.Identifier, { name }).paths();
+    const topLevel: ASTPath[] = uses.map((use) => {
+      while (use?.parent) {
+        // console.log(use.parent.node.type)
+        if (use.parent.node.type == "Program") return use;
+        use = use.parent;
+      }
+      console.log("failure", use);
+    });
+
+    console.log(topLevel.map((x) => x.node.type));
+    const lastIdx = topLevel
+      .map((x) => +x.name)
+      .reduce((x, y) => Math.max(x, y));
+    const newBody = fstArr.parent.parent.node.body.slice(0, lastIdx + 1);
+    newBody.push(j.returnStatement(j.identifier(name)));
+    // console.log(lastIdx)
+    // console.log(topLevel.map((x) => x?.name));
+
+    const myFun = j.functionExpression(null, [], j.blockStatement(newBody));
+    const callFun = j.callExpression(myFun, []);
+    // console.log(j(callFun).toSource())
+
+    // const evaluated = staticEval(callFun, {})
+    // TODO: Super unsafe!
+    const evaluated = safeEval(j(callFun).toSource());
+    // console.log(evaluated)
+    const newArray = j.arrayExpression(evaluated.map((x) => j.literal(x)));
+    fstArr.get("init").replace(newArray);
+    console.log(topLevel.map((x) => j(x).toSource()));
+
+    // const transformers = topLevel.filter<ASTPath<ExpressionStatement>>(
+    //   checkPath(j.ExpressionStatement)
+    // );
+    // const transformer = transformers.find(
+    //   (x) => x.node.expression.type == "CallExpression"
+    // );
+    // if (!transformer) return;
+    // console.log(transformer);
+    // transformer.prune();
+  }
+  evalArray(decl);
+
   console.log(decl);
   // const dotExprs = root.find(j.MemberExpression, x => x?.property?.type == "Literal" && isValidIdentifier(x?.property.value))
   const dotExprs = root
@@ -449,6 +508,16 @@ const transform: Transform = (file, api, options) => {
 
         findIdentifier(param.name, jbody, rootScope).forEach((id) => {
           id.replace(arg);
+
+          // // NOTE: This is not safe at all!
+          // // It assumes that the variable is only modified once
+          // if (!j.Literal.check(arg)) return;
+          // let par = id.parent;
+          // if (!checkPath(j.UpdateExpression)(par)) return;
+          // let parN = par.node;
+          // if (parN.operator !== "++" || !parN.prefix) return;
+
+          // par.replace(j.literal(+arg.value + 1));
         });
       });
       pth.parentPath.replace(body);
@@ -521,6 +590,7 @@ const transform: Transform = (file, api, options) => {
     .find(
       j.MemberExpression,
       ({ property }) =>
+        property &&
         property.type == "Literal" &&
         // property.computed &&
         isValidIdentifier(property.value)
