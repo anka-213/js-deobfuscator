@@ -439,6 +439,21 @@ const transform: Transform = (file, api, options) => {
     })
     .replaceWith((x) => j.literal(true));
 
+  // Transform: !0 => true
+  root
+    .find(j.UnaryExpression, {
+      operator: "!",
+      argument: { type: "Literal", value: 0 },
+    })
+    .replaceWith((x) => j.literal(true));
+  // Transform: !1 => false
+  root
+    .find(j.UnaryExpression, {
+      operator: "!",
+      argument: { type: "Literal", value: 1 },
+    })
+    .replaceWith((x) => j.literal(false));
+
   // Substitute array indexing with the actual values
   // TODO: Don't do this if the array would be mutated
   root
