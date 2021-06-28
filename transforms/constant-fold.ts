@@ -507,6 +507,7 @@ const transform: Transform = (file, api, options) => {
   // Substitute into simple immediately evaluated function expressions
   // NOTE: We are not checking if the substitution is safe
   // e.g. if we are mutating the local copy of the variables
+  /*
   root
     .find(j.CallExpression, { callee: { type: "FunctionExpression" } })
     .forEach((pth) => {
@@ -545,6 +546,7 @@ const transform: Transform = (file, api, options) => {
 
       // console.log(pth);
     });
+    */
 
   // DONE: ![] => false,  !![] => true
   root
