@@ -21,6 +21,8 @@ import { Scope } from "ast-types/lib/scope";
 // import { Scope } from "ast-types/lib/scope";
 import safeEval from "safe-eval";
 
+const shouldRename = true
+
 const transform: Transform = (file, api, options) => {
   // Alias the jscodeshift API for ease of use.
   const j = api.jscodeshift;
@@ -160,6 +162,7 @@ const transform: Transform = (file, api, options) => {
     }).length;
   console.log(`Transformed ${dotExprs} member-expressions`);
 
+  if(shouldRename) {
   // Rename variables
   {
     let varNr = 1;
@@ -283,6 +286,7 @@ const transform: Transform = (file, api, options) => {
       vd.prune();
     }).length;
   console.log(`Inlined ${varisvar} aliases`);
+  }
   // Simplify function return
   // const funs = root.find(j.FunctionDeclaration,{expression: false, body: {type: "BlockStatement"}})
   // let funBod = root.find(j.FunctionDeclaration).paths()[0].value.body.body
