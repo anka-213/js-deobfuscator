@@ -321,15 +321,15 @@ const transform: Transform = (file, api, options) => {
     if (uses.length !== 2) return;
 
     uses.filter(isVariable(j)).forEach((path) => {
-        // identifier must refer to declared variable
-        let scope = path.scope;
-        while (scope && scope !== rootScope) {
-          if (scope.declares(oldName)) return;
-          scope = scope.parent;
-        }
-        if (!scope) return; // The variable must be declared
-        path.replace(newValue);
-      });
+      // identifier must refer to declared variable
+      let scope = path.scope;
+      while (scope && scope !== rootScope) {
+        if (scope.declares(oldName)) return;
+        scope = scope.parent;
+      }
+      if (!scope) return; // The variable must be declared
+      path.replace(newValue);
+    });
     vd.prune();
 
     // Part 2: Resolve expression statement "a = a + 1"
@@ -447,7 +447,7 @@ const transform: Transform = (file, api, options) => {
           path.replace(j.arrowFunctionExpression(args, newValue));
           substLambda([path.parent]);
         });
-      
+
       // NOTE: We might not always want to delete the function
       if (findIdentifier(oldName, jScope, rootScope).length == 1) {
         pth.prune();
@@ -455,20 +455,17 @@ const transform: Transform = (file, api, options) => {
     });
 
   function substLambda(base: ASTPath<CallExpression>[]) {
-  // Substitute into simple immediately evaluated lambda expressions
-  // NOTE: We are not checking if the substitution is safe
+    // Substitute into simple immediately evaluated lambda expressions
+    // NOTE: We are not checking if the substitution is safe
     // root.find(j.CallExpression, { callee: { type: "ArrowFunctionExpression" }})
-    base
-      .filter(checkPath(j.CallExpression))
-    .forEach((pth) => {
+    base.filter(checkPath(j.CallExpression)).forEach((pth) => {
       const callee = pth.get("callee");
       if (!checkPath(j.ArrowFunctionExpression)(callee)) return;
       const body = callee.value.body;
       if (j.BlockStatement.check(body)) return;
       body;
       const params = callee.value.params;
-        if (!params.every((x): x is Identifier => j.Identifier.check(x)))
-          return;
+      if (!params.every((x): x is Identifier => j.Identifier.check(x))) return;
       params;
 
       const args = pth.value.arguments;
@@ -489,7 +486,7 @@ const transform: Transform = (file, api, options) => {
 
       // console.log(pth);
     });
-  // fun.value.body.body
+    // fun.value.body.body
   }
 
   // Subtraction
