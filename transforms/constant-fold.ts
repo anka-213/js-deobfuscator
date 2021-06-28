@@ -586,7 +586,9 @@ const transform: Transform = (file, api, options) => {
       id: { type: "Identifier" },
       init: { type: "ArrayExpression" },
     })
-    .forEach((pth) => {
+    .forEach((pth, i) => {
+      // Only substitute the first array
+      if (i > 0) return
       if (pth.value.id.type !== "Identifier") return;
       const arrayName = pth.value.id.name;
       if (pth.value.init.type !== "ArrayExpression") return;
