@@ -41,7 +41,6 @@
         {
             "name": "Full example",
             "args": [
-                
                 "-t",
                 "transforms/constant-fold.ts",
                 "/Users/anka/tmp/portingkit/appo/app.js",
@@ -51,8 +50,11 @@
             "program": "${workspaceFolder}/node_modules/.bin/jscodeshift",
             "request": "launch",
             "skipFiles": [
+                "${workspaceFolder}/node_modules/@babel/template/lib/builder.js",
+                // "${workspaceFolder}/node_modules/**/*.js",
                 "<node_internals>/**"
             ],
+            "runtimeArgs": ["--max-old-space-size=4096"],
             "type": "pwa-node"
         }
 
