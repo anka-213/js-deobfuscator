@@ -302,6 +302,10 @@ const transform: Transform = (file, api, options) => {
     // scope.find(j.Identifier, {name: last1.value.id.name})
 
     const newValue = vd.value.init;
+    if (!newValue) return;
+    // Don't substitute expressions that contains "="
+    const isComplex = j(newValue).find(j.AssignmentExpression);
+    if (isComplex.length > 0) return;
     const rootScope = vd.scope;
     const jScope = j(vd).closestScope();
     // vd.scope.bindings
@@ -312,10 +316,10 @@ const transform: Transform = (file, api, options) => {
     });
     if (changes.length > 0) return null;
 
-    jScope
-      .find(j.Identifier, { name: oldName })
-      .filter(isVariable(j))
-      .forEach((path) => {
+    const uses = jScope.find(j.Identifier, { name: oldName });
+    if (uses.length !== 2) return;
+
+    uses.filter(isVariable(j)).forEach((path) => {
         // identifier must refer to declared variable
         let scope = path.scope;
         while (scope && scope !== rootScope) {
