@@ -26,7 +26,9 @@ const transform: Transform = (file, api, options) => {
 
   // Convert the entire file source into a collection of nodes paths.
   Object;
+  console.log("Parsing");
   const root = j(file.source, {});
+  console.log("Parsed");
   const lits = root
     .find(j.Literal, (x) => typeof x.value === "number")
     .replaceWith((nodePath) => {
@@ -41,6 +43,7 @@ const transform: Transform = (file, api, options) => {
     id: { type: "Identifier" },
     init: { type: "ArrayExpression" },
   });
+  console.log(`Found ${decl.length} array declarations`);
 
   function evalArray(dcl: Collection<VariableDeclarator>) {
     if (dcl.length == 0) return;
@@ -85,7 +88,7 @@ const transform: Transform = (file, api, options) => {
     // console.log(evaluated)
     const newArray = j.arrayExpression(evaluated.map((x) => j.literal(x)));
     fstArr.get("init").replace(newArray);
-    console.log(topLevel.map((x) => j(x).toSource()));
+    // console.log(topLevel.map((x) => j(x).toSource()));
 
     const transformers = topLevel.filter<ASTPath<ExpressionStatement>>(
       checkPath(j.ExpressionStatement)
@@ -96,8 +99,10 @@ const transform: Transform = (file, api, options) => {
     if (!transformer) return;
     console.log(transformer);
     transformer.prune();
+    return true;
   }
-  evalArray(decl);
+  const eaRes = evalArray(decl);
+  console.log(`Evaluated array: ${!!eaRes}`);
 
   // Convert function expressions to function declarations
   // var f = function(){...}
@@ -132,8 +137,7 @@ const transform: Transform = (file, api, options) => {
 
       vds.replace(j.functionDeclaration(name, fun.params, fun.body));
     });
-
-  console.log(decl);
+  // console.log(decl);
   // const dotExprs = root.find(j.MemberExpression, x => x?.property?.type == "Literal" && isValidIdentifier(x?.property.value))
   const dotExprs = root
     .find(
@@ -165,6 +169,7 @@ const transform: Transform = (file, api, options) => {
       vd.renameTo("v" + varNr);
       varNr++;
     });
+    console.log(`Renamed ${varNr} variables`);
   }
 
   // Rename functions
@@ -195,6 +200,7 @@ const transform: Transform = (file, api, options) => {
         });
       // varNr++;
     });
+    console.log(`Renamed ${funNr} functions`);
   }
 
   // Rename arguments
@@ -274,7 +280,7 @@ const transform: Transform = (file, api, options) => {
         });
       vd.prune();
     });
-
+  console.log(`Inlined ${varisvar.length} aliases`);
   // Simplify function return
   // const funs = root.find(j.FunctionDeclaration,{expression: false, body: {type: "BlockStatement"}})
   // let funBod = root.find(j.FunctionDeclaration).paths()[0].value.body.body
@@ -434,6 +440,11 @@ const transform: Transform = (file, api, options) => {
           // parent.replace(newValue);
           path.replace(j.arrowFunctionExpression(args, newValue));
         });
+      
+      // NOTE: We might not always want to delete the function
+      if (findIdentifier(oldName, jScope, rootScope).length == 1) {
+        pth.prune();
+      }
     });
 
   // Substitute into simple immediately evaluated lambda expressions
