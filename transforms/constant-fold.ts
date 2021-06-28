@@ -21,7 +21,7 @@ import { Scope } from "ast-types/lib/scope";
 // import { Scope } from "ast-types/lib/scope";
 import safeEval from "safe-eval";
 
-const shouldRename = true
+const shouldRename = true;
 
 const transform: Transform = (file, api, options) => {
   // Alias the jscodeshift API for ease of use.
@@ -162,130 +162,130 @@ const transform: Transform = (file, api, options) => {
     }).length;
   console.log(`Transformed ${dotExprs} member-expressions`);
 
-  if(shouldRename) {
-  // Rename variables
-  {
-    let varNr = 1;
-    const varDecls = root.findVariableDeclarators();
-    varDecls.forEach((pth, i) => {
-      // const vd: Collection<VariableDeclarator> = j(pth);
-      const vd = varDecls.at(i);
-      vd.renameTo("v" + varNr);
-      varNr++;
-    });
-    console.log(`Renamed ${varNr} variables`);
-  }
-
-  // Rename functions
-  {
-    let funNr = 1;
-    const funDecls = root.find(j.FunctionDeclaration);
-    funDecls.forEach((vd) => {
-      // const vd: Collection<VariableDeclarator> = j(pth);
-      const oldName = vd.value.id.name;
-      const newName = "f" + funNr++;
-      const rootScope = vd.parentPath.scope;
-      const jScope = j(vd.parentPath).closestScope();
-      // const vd = funDecls.at(i);
-      // pth.value.id.name
-      // vd.renameTo("f" + varNr);
-      jScope
-        .find(j.Identifier, { name: oldName })
-        .filter(isVariable(j))
-        .forEach((path) => {
-          // identifier must refer to declared variable
-          let scope = path.scope;
-          while (scope && scope !== rootScope) {
-            if (scope.declares(oldName)) return;
-            scope = scope.parent;
-          }
-          if (!scope) return; // The variable must be declared
-          path.get("name").replace(newName);
-        });
-      // varNr++;
-    });
-    console.log(`Renamed ${funNr} functions`);
-  }
-
-  // Rename arguments
-  const funDeclsA = root.find(j.Function);
-  let anon = 1;
-  funDeclsA.forEach((fd, i, pths) => {
-    // const vd: Collection<VariableDeclarator> = j(pth);
-    let argNr = 1;
-    const jvd = funDeclsA.at(i);
-    const fname = fd.value.id?.name ?? "anon" + anon++;
-    const args = jvd
-      .map((x) => x.get("params").map((x) => x, null))
-      .filter(checkPath(j.Identifier));
-    // console.log(args);
-    args.forEach((vd) => {
-      const oldName = vd.value.name;
-      const newName = fname + "_arg" + argNr++;
-      const rootScope = vd.scope;
-      const jScope = j(vd).closestScope();
-      // const vd = funDecls.at(i);
-      // pth.value.id.name
-      // vd.renameTo("f" + varNr);
-      jScope
-        .find(j.Identifier, { name: oldName })
-        .filter(isVariable(j))
-        .forEach((path) => {
-          // identifier must refer to declared variable
-          let scope = path.scope;
-          while (scope && scope !== rootScope) {
-            if (scope.declares(oldName)) return;
-            scope = scope.parent;
-          }
-          if (!scope) return; // The variable must be declared
-          path.get("name").replace(newName);
-        });
-    });
-  });
-  console.log(`Renamed arguments for ${funDeclsA.length} functions`);
-
-  // Remove aliases like "var foo = bar;" and replace foo with bar
-  const varisvar = root
-    .find(j.VariableDeclarator, {
-      type: "VariableDeclarator",
-      id: { type: "Identifier" },
-      init: { type: "Identifier" },
-    })
-    .forEach((vd) => {
-      // No pattern matching declarations
-      if (
-        vd.value.id.type != "Identifier" ||
-        vd.value.init.type != "Identifier"
-      )
-        return null;
-      const oldName = vd.value.id.name;
-      const newName = vd.value.init.name;
-      const rootScope = vd.scope;
-      const jScope = j(vd).closestScope();
-      // vd.scope.bindings
-
-      // We don't replace if the value is changed at any point
-      const changes = jScope.find(j.AssignmentExpression, {
-        left: { type: "Identifier", name: oldName },
+  if (shouldRename) {
+    // Rename variables
+    {
+      let varNr = 1;
+      const varDecls = root.findVariableDeclarators();
+      varDecls.forEach((pth, i) => {
+        // const vd: Collection<VariableDeclarator> = j(pth);
+        const vd = varDecls.at(i);
+        vd.renameTo("v" + varNr);
+        varNr++;
       });
-      if (changes.length > 0) return null;
+      console.log(`Renamed ${varNr} variables`);
+    }
 
-      jScope
-        .find(j.Identifier, { name: oldName })
-        .filter(isVariable(j))
-        .forEach((path) => {
-          // identifier must refer to declared variable
-          let scope = path.scope;
-          while (scope && scope !== rootScope) {
-            if (scope.declares(oldName)) return;
-            scope = scope.parent;
-          }
-          if (!scope) return; // The variable must be declared
-          path.get("name").replace(newName);
+    // Rename functions
+    {
+      let funNr = 1;
+      const funDecls = root.find(j.FunctionDeclaration);
+      funDecls.forEach((vd) => {
+        // const vd: Collection<VariableDeclarator> = j(pth);
+        const oldName = vd.value.id.name;
+        const newName = "f" + funNr++;
+        const rootScope = vd.parentPath.scope;
+        const jScope = j(vd.parentPath).closestScope();
+        // const vd = funDecls.at(i);
+        // pth.value.id.name
+        // vd.renameTo("f" + varNr);
+        jScope
+          .find(j.Identifier, { name: oldName })
+          .filter(isVariable(j))
+          .forEach((path) => {
+            // identifier must refer to declared variable
+            let scope = path.scope;
+            while (scope && scope !== rootScope) {
+              if (scope.declares(oldName)) return;
+              scope = scope.parent;
+            }
+            if (!scope) return; // The variable must be declared
+            path.get("name").replace(newName);
+          });
+        // varNr++;
+      });
+      console.log(`Renamed ${funNr} functions`);
+    }
+
+    // Rename arguments
+    const funDeclsA = root.find(j.Function);
+    let anon = 1;
+    funDeclsA.forEach((fd, i, pths) => {
+      // const vd: Collection<VariableDeclarator> = j(pth);
+      let argNr = 1;
+      const jvd = funDeclsA.at(i);
+      const fname = fd.value.id?.name ?? "anon" + anon++;
+      const args = jvd
+        .map((x) => x.get("params").map((x) => x, null))
+        .filter(checkPath(j.Identifier));
+      // console.log(args);
+      args.forEach((vd) => {
+        const oldName = vd.value.name;
+        const newName = fname + "_arg" + argNr++;
+        const rootScope = vd.scope;
+        const jScope = j(vd).closestScope();
+        // const vd = funDecls.at(i);
+        // pth.value.id.name
+        // vd.renameTo("f" + varNr);
+        jScope
+          .find(j.Identifier, { name: oldName })
+          .filter(isVariable(j))
+          .forEach((path) => {
+            // identifier must refer to declared variable
+            let scope = path.scope;
+            while (scope && scope !== rootScope) {
+              if (scope.declares(oldName)) return;
+              scope = scope.parent;
+            }
+            if (!scope) return; // The variable must be declared
+            path.get("name").replace(newName);
+          });
+      });
+    });
+    console.log(`Renamed arguments for ${funDeclsA.length} functions`);
+
+    // Remove aliases like "var foo = bar;" and replace foo with bar
+    const varisvar = root
+      .find(j.VariableDeclarator, {
+        type: "VariableDeclarator",
+        id: { type: "Identifier" },
+        init: { type: "Identifier" },
+      })
+      .forEach((vd) => {
+        // No pattern matching declarations
+        if (
+          vd.value.id.type != "Identifier" ||
+          vd.value.init.type != "Identifier"
+        )
+          return null;
+        const oldName = vd.value.id.name;
+        const newName = vd.value.init.name;
+        const rootScope = vd.scope;
+        const jScope = j(vd).closestScope();
+        // vd.scope.bindings
+
+        // We don't replace if the value is changed at any point
+        const changes = jScope.find(j.AssignmentExpression, {
+          left: { type: "Identifier", name: oldName },
         });
-      vd.prune();
-    }).length;
-  console.log(`Inlined ${varisvar} aliases`);
+        if (changes.length > 0) return null;
+
+        jScope
+          .find(j.Identifier, { name: oldName })
+          .filter(isVariable(j))
+          .forEach((path) => {
+            // identifier must refer to declared variable
+            let scope = path.scope;
+            while (scope && scope !== rootScope) {
+              if (scope.declares(oldName)) return;
+              scope = scope.parent;
+            }
+            if (!scope) return; // The variable must be declared
+            path.get("name").replace(newName);
+          });
+        vd.prune();
+      }).length;
+    console.log(`Inlined ${varisvar} aliases`);
   }
   // Simplify function return
   // const funs = root.find(j.FunctionDeclaration,{expression: false, body: {type: "BlockStatement"}})
@@ -592,7 +592,7 @@ const transform: Transform = (file, api, options) => {
     })
     .forEach((pth, i) => {
       // Only substitute the first array
-      if (i > 0) return
+      if (i > 0) return;
       if (pth.value.id.type !== "Identifier") return;
       const arrayName = pth.value.id.name;
       if (pth.value.init.type !== "ArrayExpression") return;
