@@ -637,7 +637,6 @@ const transform: Transform = (file, api, options) => {
   // TODO: Write some real unit tests (should probably have started with this)
   // DONE: Take a shortcut and run the first part manually and put it in a separate file, so we can figure out what's happening without having to run the complicated code
 
-  console.log(varisvar);
   return root.toSource();
   // decl.paths()[0]
 };
