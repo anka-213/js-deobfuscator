@@ -386,10 +386,8 @@ const transform: Transform = (file, api, options) => {
     .replaceWith(({ value }) => {
       const { left, right } = value;
       if (left.type !== "Literal" || right.type !== "Literal") return value;
-      if (typeof left.value !== "number" || typeof right.value !== "number")
-        return value;
 
-      return j.literal(left.value - right.value);
+      return j.literal(+left.value - +right.value);
     });
 
   // Substitute into simple immediately evaluated function expressions
