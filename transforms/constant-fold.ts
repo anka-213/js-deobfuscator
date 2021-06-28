@@ -403,7 +403,7 @@ const transform: Transform = (file, api, options) => {
 
       const args = pth.value.params;
       // TODO: Support multiple args
-      // if (args.length != 1) return;
+      if (args.length == 0) return;
       if (args[0].type !== "Identifier") return;
       const argName = args[0].name;
 
