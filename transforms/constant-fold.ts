@@ -181,6 +181,40 @@ const transform: Transform = (file, api, options) => {
       vd.prune();
     });
 
+  // Convert function expressions to function declarations
+  // var f = function(){...}
+  // to
+  // function f(){...}
+  root
+    .find(j.VariableDeclaration, {
+      type: "VariableDeclaration",
+      declarations: [
+        {
+          type: "VariableDeclarator",
+          id: { type: "Identifier" },
+          init: { type: "FunctionExpression" },
+        },
+      ],
+    })
+    .forEach((vds) => {
+      // let vd = vds.get("declarations",0) // as ASTPath<VariableDeclarator>
+      // if (!checkPath(j.VariableDeclarator)(vd)) return
+      // let name = vd.get("id")
+      // if (!checkPath(j.Identifier)(name)) return
+      // let fun = vd.get("init")
+      // if (!checkPath(j.FunctionExpression)(fun)) return
+      // console.log(fun)
+
+      let vd = vds.node.declarations[0];
+      if (!j.VariableDeclarator.check(vd)) return;
+      let name = vd.id;
+      if (!j.Identifier.check(name)) return;
+      let fun = vd.init;
+      if (!j.FunctionExpression.check(fun)) return;
+
+      vds.replace(j.functionDeclaration(name, fun.params, fun.body));
+    });
+
   // Simplify function return
   // const funs = root.find(j.FunctionDeclaration,{expression: false, body: {type: "BlockStatement"}})
   // let funBod = root.find(j.FunctionDeclaration).paths()[0].value.body.body
