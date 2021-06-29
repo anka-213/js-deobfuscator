@@ -307,6 +307,8 @@ const transform: Transform = (file, api, options) => {
     const uses = jScope.find(j.Identifier, { name: oldName });
     if (uses.length !== 2) return;
 
+    // TODO: Check that the the combined length is not too much
+
     uses.filter(isVariable(j)).forEach((path) => {
       // identifier must refer to declared variable
       let scope = path.scope;
@@ -608,6 +610,13 @@ const transform: Transform = (file, api, options) => {
   // TODO: Write some real unit tests (should probably have started with this)
   // DONE: Take a shortcut and run the first part manually and put it in a separate file, so we can figure out what's happening without having to run the complicated code
 
+
+  // Alternative naming scheme: global3_fun7_var5
+
+  // IDEA: Generate hashes for library functions so we can find what they were compiled from
+  // Naming scheme: scope-depth_var-nr should work for that
+  // Convert so it referres to other modules by hash instead of name
+
   const result = root.toSource();
   return result;
   // decl.paths()[0]
@@ -628,6 +637,7 @@ function transformDotExprs(root: Collection, j: core.JSCodeshift) {
       let ans: MemberExpression = pth.node;
       // console.log(ans);
       if (property.type === "Literal" && typeof property.value === "string") {
+        // TODO: Same problem with missing parens for `(a+b)[c]`
         if (object.type === "AssignmentExpression") {
           object = j.assignmentExpression(
             object.operator,
