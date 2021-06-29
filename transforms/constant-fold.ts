@@ -270,9 +270,9 @@ const transform: Transform = (file, api, options) => {
   // Simplify function return
   // const funs = root.find(j.FunctionDeclaration,{expression: false, body: {type: "BlockStatement"}})
   // let funBod = root.find(j.FunctionDeclaration).paths()[0].value.body.body
-  let funBod = root.find(j.FunctionDeclaration).forEach((fun) => {
-    // // Only simplify the first function (since this transformation is fragile)
-    // if (i > 0) return;
+  let funBod = root.find(j.FunctionDeclaration).forEach((fun, i) => {
+    // Only simplify the first function (since this transformation is fragile)
+    if (i > 0) return;
     let stmts = fun.get("body", "body");
     let second_last = stmts.get(stmts.value.length - 2);
     // if (!j.VariableDeclaration.check(last.value)) return null
