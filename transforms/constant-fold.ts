@@ -577,6 +577,7 @@ const transform: Transform = (file, api, options) => {
       init: { type: "ArrayExpression" },
     })
     .forEach((pth, i) => {
+      // TODO: Make this less fragile
       // Only substitute the first array
       if (i > 0) return;
       if (pth.value.id.type !== "Identifier") return;
@@ -606,6 +607,7 @@ const transform: Transform = (file, api, options) => {
   // DONE: Learn subtraction
   // TODO: a && b => if (a) { b }
   // TODO: a , b => { a ; b }
+  // Related: return a , b => a ; return b
   // DONE: Apply the non-lambda function to its arguments as well (maybe just FunctionExpression is sufficient, but we need to check that we are in an ExpressionStatement too)
   // TODO: Write some real unit tests (should probably have started with this)
   // DONE: Take a shortcut and run the first part manually and put it in a separate file, so we can figure out what's happening without having to run the complicated code
@@ -619,6 +621,7 @@ const transform: Transform = (file, api, options) => {
   // IDEA: Generate hashes for library functions so we can find what they were compiled from
   // Naming scheme: scope-depth_var-nr should work for that
   // Convert so it referres to other modules by hash instead of name
+  // Problem: Need to find a normal form to be independent of settings
 
   const result = root.toSource();
   return result;
@@ -640,7 +643,15 @@ function transformDotExprs(root: Collection, j: core.JSCodeshift) {
       let ans: MemberExpression = pth.node;
       // console.log(ans);
       if (property.type === "Literal" && typeof property.value === "string") {
-        // TODO: Same problem with missing parens for `(a+b)[c]`
+        // DONE: Same problem with missing parens for `(a+b)[c]`
+        // TODO: Problem with deeper nesting
+        if (object.type === "BinaryExpression") {
+          object = j.binaryExpression(
+            object.operator,
+            object.left,
+            object.right
+          );
+        }
         if (object.type === "AssignmentExpression") {
           object = j.assignmentExpression(
             object.operator,
