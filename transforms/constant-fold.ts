@@ -7,11 +7,9 @@ import core, {
   ExpressionStatement,
   Identifier,
   JSCodeshift,
+  Literal,
   MemberExpression,
-  Pattern,
-  SpreadElement,
   Transform,
-  VariableDeclaration,
   VariableDeclarator,
 } from "jscodeshift";
 import { isValidIdentifier } from "@babel/types";
@@ -142,25 +140,7 @@ const transform: Transform = (file, api, options) => {
     });
   // console.log(decl);
   // const dotExprs = root.find(j.MemberExpression, x => x?.property?.type == "Literal" && isValidIdentifier(x?.property.value))
-  const dotExprs = root
-    .find(
-      j.MemberExpression,
-      ({ property }) =>
-        property.type == "Literal" &&
-        // property.computed &&
-        isValidIdentifier(property.value)
-    )
-    .replaceWith((pth) => {
-      const { object, property } = pth.node;
-      let ans: MemberExpression = pth.node;
-      // console.log(ans);
-      if (property.type === "Literal" && typeof property.value === "string") {
-        ans = j.memberExpression(object, j.identifier(property.value));
-      }
-      // console.log(ans);
-      return ans;
-    }).length;
-  console.log(`Transformed ${dotExprs} member-expressions`);
+  transformDotExprs(root, j);
 
   if (shouldRename) {
     // Rename variables
@@ -291,6 +271,8 @@ const transform: Transform = (file, api, options) => {
   // const funs = root.find(j.FunctionDeclaration,{expression: false, body: {type: "BlockStatement"}})
   // let funBod = root.find(j.FunctionDeclaration).paths()[0].value.body.body
   let funBod = root.find(j.FunctionDeclaration).forEach((fun) => {
+    // // Only simplify the first function (since this transformation is fragile)
+    // if (i > 0) return;
     let stmts = fun.get("body", "body");
     let second_last = stmts.get(stmts.value.length - 2);
     // if (!j.VariableDeclaration.check(last.value)) return null
@@ -334,6 +316,8 @@ const transform: Transform = (file, api, options) => {
       }
       if (!scope) return; // The variable must be declared
       path.replace(newValue);
+      if (!j.Literal.check(newValue)) return;
+      repairInlinedVar(path, newValue);
     });
     vd.prune();
 
@@ -550,7 +534,7 @@ const transform: Transform = (file, api, options) => {
 
       // console.log(pth);
     });
-    */
+    // */
 
   // DONE: ![] => false,  !![] => true
   root
@@ -615,7 +599,22 @@ const transform: Transform = (file, api, options) => {
     });
 
   // Transform the newly formed foo["bar"] into foo.bar
-  const dotExprs2 = root
+  transformDotExprs(root, j);
+
+  // DONE: Learn subtraction
+  // TODO: a && b => if (a) { b }
+  // TODO: a , b => { a ; b }
+  // DONE: Apply the non-lambda function to its arguments as well (maybe just FunctionExpression is sufficient, but we need to check that we are in an ExpressionStatement too)
+  // TODO: Write some real unit tests (should probably have started with this)
+  // DONE: Take a shortcut and run the first part manually and put it in a separate file, so we can figure out what's happening without having to run the complicated code
+
+  const result = root.toSource();
+  return result;
+  // decl.paths()[0]
+};
+
+function transformDotExprs(root: Collection, j: core.JSCodeshift) {
+  const dotExprs = root
     .find(
       j.MemberExpression,
       ({ property }) =>
@@ -625,27 +624,37 @@ const transform: Transform = (file, api, options) => {
         isValidIdentifier(property.value)
     )
     .replaceWith((pth) => {
-      const { object, property } = pth.node;
+      let { object, property } = pth.node;
       let ans: MemberExpression = pth.node;
       // console.log(ans);
       if (property.type === "Literal" && typeof property.value === "string") {
+        if (object.type === "AssignmentExpression") {
+          object = j.assignmentExpression(
+            object.operator,
+            object.left,
+            object.right
+          );
+        }
         ans = j.memberExpression(object, j.identifier(property.value));
       }
       // console.log(ans);
       return ans;
-    });
-  console.log(`Transformed ${dotExprs2.length} member-expressions`);
+    }).length;
+  console.log(`Transformed ${dotExprs} member-expressions`);
+}
 
-  // DONE: Learn subtraction
-  // TODO: a && b => if (a) { b }
-  // TODO: a , b => { a ; b }
-  // DONE: Apply the non-lambda function to its arguments as well (maybe just FunctionExpression is sufficient, but we need to check that we are in an ExpressionStatement too)
-  // TODO: Write some real unit tests (should probably have started with this)
-  // DONE: Take a shortcut and run the first part manually and put it in a separate file, so we can figure out what's happening without having to run the complicated code
+function repairInlinedVar(id: ASTPath<Identifier>, arg: Literal) {
+  const j = core;
 
-  return root.toSource();
-  // decl.paths()[0]
-};
+  // NOTE: This is not safe at all!
+  // It assumes that the variable is only modified once
+  let par = id.parent;
+  if (!checkPath(j.UpdateExpression)(par)) return;
+  let parN = par.node;
+  if (parN.operator !== "++" || !parN.prefix) return;
+
+  par.replace(j.literal(+arg.value + 1));
+}
 
 function findIdentifier(name: string, haystack: Collection, rootScope: Scope) {
   const j = core;
