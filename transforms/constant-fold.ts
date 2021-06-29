@@ -610,6 +610,9 @@ const transform: Transform = (file, api, options) => {
   // TODO: Write some real unit tests (should probably have started with this)
   // DONE: Take a shortcut and run the first part manually and put it in a separate file, so we can figure out what's happening without having to run the complicated code
 
+  // TODO: Handle bundler code (in a separate module):
+  // * Rename export, import, etc function arguments to the standard names
+  // * Give a number to each function to simplify lookup
 
   // Alternative naming scheme: global3_fun7_var5
 
