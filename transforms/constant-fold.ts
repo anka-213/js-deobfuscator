@@ -118,12 +118,12 @@ const transform: Transform = (file, api, options) => {
 
     // const evaluated = staticEval(callFun, {})
     // TODO: Super unsafe!
-    let evaluated : string[]
+    let evaluated: string[];
     try {
       evaluated = safeEval(j(callFun).toSource());
     } catch (e) {
-      console.warn(e)
-      return
+      console.warn(e);
+      return;
     }
     // console.log(evaluated)
     const newArray = j.arrayExpression(evaluated.map((x) => j.literal(x)));
@@ -684,24 +684,39 @@ function transformDotExprs(root: Collection, j: core.JSCodeshift) {
       if (property.type === "Literal" && typeof property.value === "string") {
         // DONE: Same problem with missing parens for `(a+b)[c]`
         // TODO: Problem with deeper nesting
-        if (object.type === "BinaryExpression") {
-          object = j.binaryExpression(
-            object.operator,
-            object.left,
-            object.right
-          );
+        // if (object.type === "BinaryExpression") {
+        //   object = j.binaryExpression(
+        //     object.operator,
+        //     object.left,
+        //     object.right
+        //   );
+        // }
+        // if (object.type === "AssignmentExpression") {
+        //   object = j.assignmentExpression(
+        //     object.operator,
+        //     object.left,
+        //     object.right
+        //   );
+        // }
+        // if (object.type === "ConditionalExpression") {
+        //   object = j.conditionalExpression(
+        //     object.test,
+        //     object.consequent,
+        //     object.alternate
+        //   );
+        // }
+        if (!["Literal", "Identifier", "MemberExpression", "CallExpression", "ThisExpression"].includes(object.type)) {
+          object = j.parenthesizedExpression(object);
         }
-        if (object.type === "AssignmentExpression") {
-          object = j.assignmentExpression(
-            object.operator,
-            object.left,
-            object.right
-          );
-        }
+        // object.extra && (object.extra.parenthesized = false)
+        // object.left?.extra && (object.left.extra.parenthesized = false)
+        // object.right?.extra && (object.right.extra.parenthesized = false)
         ans = j.memberExpression(object, j.identifier(property.value));
         // // Not the correct way to do things, but might work better
         // pth.node.computed = false;
         // pth.node.property = j.identifier(property.value);
+        // object.extra && (object.extra.parenthesized = false)
+        // console.log(Object.keys(object?.extra || {}));
       }
       // console.log(ans);
       return ans;
