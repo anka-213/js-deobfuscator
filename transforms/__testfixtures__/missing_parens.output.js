@@ -37,4 +37,4 @@ _0x47f3d0 =
         ? "<=" + anon2_arg9 + "." + anon2_arg10 + "." + anon2_arg11 + "-" + anon2_arg12
         : anon1_arg1
         ? "<" + anon2_arg9 + "." + anon2_arg10 + "." + (+anon2_arg11 + 1) + "-0"
-        : "<=" + anon2_arg8))[a0_0x5dad("0x3b8d")]();
+        : "<=" + anon2_arg8)).foobar();
