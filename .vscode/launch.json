@@ -58,6 +58,26 @@
             "runtimeArgs": ["--max-old-space-size=4096"],
             "type": "pwa-node"
         }
+        ,
+        {
+            "name": "Goto to structured",
+            "args": [
+                "-t",
+                "transforms/goto-to-structured.ts",
+                "data/jscrambler_short.js",
+                "--dry",
+                "--print",
+            ],
+            "program": "${workspaceFolder}/node_modules/.bin/jscodeshift",
+            "request": "launch",
+            "skipFiles": [
+                "${workspaceFolder}/node_modules/@babel/template/lib/builder.js",
+                // "${workspaceFolder}/node_modules/**/*.js",
+                "<node_internals>/**"
+            ],
+            "runtimeArgs": ["--max-old-space-size=4096"],
+            "type": "pwa-node"
+        }
 
 
 
