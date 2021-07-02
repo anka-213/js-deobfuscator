@@ -21,10 +21,34 @@ import safeEval from "safe-eval";
 
 const shouldRename = true;
 
+function unescape(str: string) {
+  var i = 32;
+  while (i < 128) {
+    str = str.replace(new RegExp('\\\\x' + i.toString(16), 'ig'), String.fromCharCode(i));
+    str = str.replace(new RegExp('\\\\u00' + i.toString(16), 'ig'), String.fromCharCode(i));
+    i++;
+  }
+  str = str.replace(/\\x09/g, "\t");
+  return str;
+}
+
+function unescapeAll(str: string) {
+  str.replace(/\\(x|u00)([0-9]{2})/, (a,b,nr) => String.fromCharCode(parseInt(nr,16)))
+}
+
+function unescapeRegExp<T>(value : T) {
+  if (!(value instanceof RegExp)) return value
+  return new RegExp(unescape(value.source),value.flags)
+}
+
 const transform: Transform = (file, api, options) => {
   // Alias the jscodeshift API for ease of use.
   const j = api.jscodeshift;
 
+  const example1 =j('/\\x74\\u0072\\u0075\\x65/').find(j.Literal)
+    .replaceWith(({value:{value}}) => j.literal(unescapeRegExp(value)))
+    // .forEach(x => console.log(x.value.raw = unescape(x.value.raw)))
+  console.log(example1.toSource())
   // Convert the entire file source into a collection of nodes paths.
   Object;
   console.log("Parsing");
@@ -660,9 +684,13 @@ function transformDotExprs(root: Collection, j: core.JSCodeshift) {
           );
         }
         ans = j.memberExpression(object, j.identifier(property.value));
+        // Not the correct way to do things, but might work better
+        pth.node.computed = false;
+        pth.node.property = j.identifier(property.value);
       }
       // console.log(ans);
-      return ans;
+      // return ans;
+      return pth.node;
     }).length;
   console.log(`Transformed ${dotExprs} member-expressions`);
 }
