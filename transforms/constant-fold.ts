@@ -24,8 +24,14 @@ const shouldRename = true;
 function unescape(str: string) {
   var i = 32;
   while (i < 128) {
-    str = str.replace(new RegExp('\\\\x' + i.toString(16), 'ig'), String.fromCharCode(i));
-    str = str.replace(new RegExp('\\\\u00' + i.toString(16), 'ig'), String.fromCharCode(i));
+    str = str.replace(
+      new RegExp("\\\\x" + i.toString(16), "ig"),
+      String.fromCharCode(i)
+    );
+    str = str.replace(
+      new RegExp("\\\\u00" + i.toString(16), "ig"),
+      String.fromCharCode(i)
+    );
     i++;
   }
   str = str.replace(/\\x09/g, "\t");
@@ -33,22 +39,25 @@ function unescape(str: string) {
 }
 
 function unescapeAll(str: string) {
-  str.replace(/\\(x|u00)([0-9]{2})/, (a,b,nr) => String.fromCharCode(parseInt(nr,16)))
+  str.replace(/\\(x|u00)([0-9]{2})/, (a, b, nr) =>
+    String.fromCharCode(parseInt(nr, 16))
+  );
 }
 
-function unescapeRegExp<T>(value : T) {
-  if (!(value instanceof RegExp)) return value
-  return new RegExp(unescape(value.source),value.flags)
+function unescapeRegExp<T>(value: T) {
+  if (!(value instanceof RegExp)) return value;
+  return new RegExp(unescape(value.source), value.flags);
 }
 
 const transform: Transform = (file, api, options) => {
   // Alias the jscodeshift API for ease of use.
   const j = api.jscodeshift;
 
-  const example1 =j('/\\x74\\u0072\\u0075\\x65/').find(j.Literal)
-    .replaceWith(({value:{value}}) => j.literal(unescapeRegExp(value)))
-    // .forEach(x => console.log(x.value.raw = unescape(x.value.raw)))
-  console.log(example1.toSource())
+  const example1 = j("/\\x74\\u0072\\u0075\\x65/")
+    .find(j.Literal)
+    .replaceWith(({ value: { value } }) => j.literal(unescapeRegExp(value)));
+  // .forEach(x => console.log(x.value.raw = unescape(x.value.raw)))
+  console.log(example1.toSource());
   // Convert the entire file source into a collection of nodes paths.
   Object;
   console.log("Parsing");
@@ -109,7 +118,13 @@ const transform: Transform = (file, api, options) => {
 
     // const evaluated = staticEval(callFun, {})
     // TODO: Super unsafe!
-    const evaluated = safeEval(j(callFun).toSource());
+    let evaluated : string[]
+    try {
+      evaluated = safeEval(j(callFun).toSource());
+    } catch (e) {
+      console.warn(e)
+      return
+    }
     // console.log(evaluated)
     const newArray = j.arrayExpression(evaluated.map((x) => j.literal(x)));
     fstArr.get("init").replace(newArray);
