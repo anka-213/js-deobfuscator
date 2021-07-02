@@ -706,7 +706,10 @@ function transformDotExprs(root: Collection, j: core.JSCodeshift) {
         //   );
         // }
         if (!["Literal", "Identifier", "MemberExpression", "CallExpression", "ThisExpression"].includes(object.type)) {
+          if (!object?.extra?.parenthesized) console.log(`Non-parens: ${object.type}`)
           object = j.parenthesizedExpression(object);
+        } else {
+          if (object?.extra?.parenthesized) console.log(`Parens: ${object.type}`)
         }
         // object.extra && (object.extra.parenthesized = false)
         // object.left?.extra && (object.left.extra.parenthesized = false)
