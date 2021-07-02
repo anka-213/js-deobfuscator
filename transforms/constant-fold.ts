@@ -684,13 +684,13 @@ function transformDotExprs(root: Collection, j: core.JSCodeshift) {
           );
         }
         ans = j.memberExpression(object, j.identifier(property.value));
-        // Not the correct way to do things, but might work better
-        pth.node.computed = false;
-        pth.node.property = j.identifier(property.value);
+        // // Not the correct way to do things, but might work better
+        // pth.node.computed = false;
+        // pth.node.property = j.identifier(property.value);
       }
       // console.log(ans);
-      // return ans;
-      return pth.node;
+      return ans;
+      // return pth.node;
     }).length;
   console.log(`Transformed ${dotExprs} member-expressions`);
 }
