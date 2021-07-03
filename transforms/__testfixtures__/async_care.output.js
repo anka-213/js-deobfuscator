@@ -10,3 +10,5 @@ for (
 ) {
   foo()
 }
+
+async function f1() {}

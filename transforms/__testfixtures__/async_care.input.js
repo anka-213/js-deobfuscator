@@ -12,3 +12,5 @@ for (
 ) {
   foo()
 }
+
+var baz = async function () {}
