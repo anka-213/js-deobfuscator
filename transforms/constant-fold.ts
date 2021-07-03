@@ -168,14 +168,23 @@ const transform: Transform = (file, api, options) => {
       // if (!checkPath(j.FunctionExpression)(fun)) return
       // console.log(fun)
 
-      let vd = vds.node.declarations[0];
+      if (vds.node.declarations.length != 1) return
+      let [vd] = vds.node.declarations;
       if (!j.VariableDeclarator.check(vd)) return;
-      let name = vd.id;
-      if (!j.Identifier.check(name)) return;
+      let id = vd.id;
+      if (!j.Identifier.check(id)) return;
       let fun = vd.init;
       if (!j.FunctionExpression.check(fun)) return;
+      // if (fun.async || fun.generator) return;
 
-      vds.replace(j.functionDeclaration(name, fun.params, fun.body));
+      // fun.expression
+      // const {params, body, generator, async } = fun
+
+      const {type, ...rest } = fun
+      // vds.replace(j.functionDeclaration(name, fun.params, fun.body));
+      // vds.replace(j.functionDeclaration.from({id, params, body, async, generator}));
+      vds.replace(j.functionDeclaration.from({...rest, id }));
+      // vds.replace(j.functionDeclaration.from({id, params, ...fun , expression: false}));
     });
   // console.log(decl);
   // const dotExprs = root.find(j.MemberExpression, x => x?.property?.type == "Literal" && isValidIdentifier(x?.property.value))
