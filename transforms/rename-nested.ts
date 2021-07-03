@@ -27,7 +27,9 @@ const transform: Transform = (file, api, options) => {
       // const vd: Collection<VariableDeclarator> = j(pth);
       const oldName = vd.value.id.name;
     //   const newName = "f" + funNr++;
-      const newName = "nest" + "f" + funNr++;
+      const funId = vd.scope._numFuns = vd.scope._numFuns + 1 || 1
+      const newName = `nest${vd.scope.depth+1}_f${funId}`
+      // const newName = "nest" + "f" + funNr++;
       const rootScope = vd.parentPath.scope;
       const jScope = j(vd.parentPath).closestScope();
 
@@ -61,7 +63,7 @@ const transform: Transform = (file, api, options) => {
     const varDecls = root.findVariableDeclarators();
     varDecls.forEach((pth, i) => {
       // const vd: Collection<VariableDeclarator> = j(pth);
-      const varId = pth.scope.numVars = pth.scope.numVars + 1 || 1
+      const varId = pth.scope._numVars = pth.scope._numVars + 1 || 1
       const vd = varDecls.at(i);
     //   vd.renameTo("v" + varNr);
       vd.renameTo(`n${pth.scope.depth+1}_v${varId}`);
@@ -78,7 +80,11 @@ const transform: Transform = (file, api, options) => {
     // const vd: Collection<VariableDeclarator> = j(pth);
     let argNr = 1;
     const jvd = funDeclsA.at(i);
-    const fname = fd.value.id?.name ?? "anon" + anon++;
+    // const funId = fd.scope.numAnons = fd.scope.numAnons + 1 || 1
+    // const newName = `nest${fd.scope.depth+1}_anon${funId}`
+    const newName = `nest${fd.scope.depth+1}`
+    const fname = fd.value.id?.name ?? newName;
+    // const fname = fd.value.id?.name ?? "anon" + anon++;
     const args = jvd
       .map((x) => x.get("params").map((x) => x, null))
       .filter(checkPath(j.Identifier));
@@ -102,7 +108,8 @@ const transform: Transform = (file, api, options) => {
             scope = scope.parent;
           }
           if (!scope) return; // The variable must be declared
-          path.get("name").replace(newName as unknown as ASTNode);
+          // path.get("name").replace(newName as unknown as ASTNode);
+          path.replace(j.identifier(newName));
         });
     });
   });
