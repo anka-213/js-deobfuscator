@@ -45,7 +45,7 @@
             "args": [
                 "-t",
                 "transforms/constant-fold.ts",
-                "/Users/anka/tmp/portingkit/appo/app.js",
+                "/Users/anka/projekt/reversing/portingkit/appo/app.js",
                 "--dry",
                 "--print",
             ],
