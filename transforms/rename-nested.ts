@@ -27,8 +27,8 @@ const transform: Transform = (file, api, options) => {
       // const vd: Collection<VariableDeclarator> = j(pth);
       const oldName = vd.value.id.name;
     //   const newName = "f" + funNr++;
-      const funId = vd.scope._numFuns = vd.scope._numFuns + 1 || 1
-      const newName = `nest${vd.scope.depth+1}_f${funId}`
+      const funId = vd.scope.parent._numFuns = vd.scope.parent._numFuns + 1 || 1
+      const newName = `nest${vd.scope.depth}_f${funId}`
       // const newName = "nest" + "f" + funNr++;
       const rootScope = vd.parentPath.scope;
       const jScope = j(vd.parentPath).closestScope();
