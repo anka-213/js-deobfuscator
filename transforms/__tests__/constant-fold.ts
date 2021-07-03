@@ -11,4 +11,7 @@ describe("deobfuscate-array-code", () => {
   defineTest(__dirname, "constant-fold", null, `missing_parens`, {
     parser: "babel",
   });
+  defineTest(__dirname, "constant-fold", null, `async_care`, {
+    parser: "babel",
+  });
 });
