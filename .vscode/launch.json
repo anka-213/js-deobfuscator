@@ -76,7 +76,7 @@
                 // "${workspaceFolder}/node_modules/**/*.js",
                 "<node_internals>/**"
             ],
-            "runtimeArgs": ["--max-old-space-size=4096"],
+            "runtimeArgs": ["--max-old-space-size=4096", "--stack-size=16000"],
             "type": "pwa-node"
         }
         ,
