@@ -13,8 +13,10 @@ import { Type } from "ast-types/lib/types";
 
 // One easy case is:
 // var { foo: v3856 } = baz;
+// v3856 + 1;
 // =>
 // var { foo: foo } = baz;
+// foo + 1;
 
 // We can also guess that imports from a module should be named the same as the module:
 // var v324 = require('foo/bar');
@@ -46,7 +48,6 @@ const transform: Transform = (file, api, options) => {
 
   const result = root.toSource();
   return result;
-  // decl.paths()[0]
 };
 
 export default transform;
