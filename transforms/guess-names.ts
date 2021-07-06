@@ -42,10 +42,29 @@ const transform: Transform = (file, api, options) => {
   const j = api.jscodeshift;
 
   // Convert the entire file source into a collection of nodes paths.
-  console.log("Parsing");
+//   console.log("Parsing");
   const root = j(file.source, {});
-  console.log("Parsed");
+//   console.log("Parsed");
 
+  // j('var a = 1; function(){ var b = 2;}')
+  // does the outer scope declare b?
+
+  const vds = root.findVariableDeclarators() // .map(x=>x.get("id")).filter(x => j.ObjectPattern.check(x))
+
+  vds.forEach(pth => {
+      
+    const init = pth.node.init
+    if (!(init && init.type == 'CallExpression' 
+        && init.callee.type == 'Identifier'
+        && init.callee.name == 'require'
+        && init.arguments.length === 1
+        && init.arguments[0].type === 'Literal'
+        && typeof init.arguments[0].value === 'string')) return
+    const newName = init.arguments[0].value.replace(/[\/.-]/,'_')
+    j(pth).renameTo(newName)
+  })
+  // vds.paths()[0].scope.declares("v3856")
+  console.log(vds.paths()[0].node)
   const result = root.toSource();
   return result;
 };

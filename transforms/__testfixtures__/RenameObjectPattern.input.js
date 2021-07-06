@@ -1,2 +1,7 @@
-var { foo: v3856 } = baz;
-v3856 + 1;
+var { foo: a } = baz;
+a + 1;
+
+function ff() {
+  var b = a;
+  return b + a
+}
