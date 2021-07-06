@@ -60,11 +60,11 @@ const transform: Transform = (file, api, options) => {
         && init.arguments.length === 1
         && init.arguments[0].type === 'Literal'
         && typeof init.arguments[0].value === 'string')) return
-    const newName = init.arguments[0].value.replace(/[\/.-]/,'_')
+    const newName = init.arguments[0].value.replace(/[\/.-]/g,'_')
     j(pth).renameTo(newName)
   })
   // vds.paths()[0].scope.declares("v3856")
-  console.log(vds.paths()[0].node)
+  // console.log(vds.paths()[0].node)
   const result = root.toSource();
   return result;
 };
