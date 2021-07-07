@@ -18,6 +18,7 @@ import { Type } from "ast-types/lib/types";
 import { Scope } from "ast-types/lib/scope";
 // import { Scope } from "ast-types/lib/scope";
 import safeEval from "safe-eval";
+import { StatementKind } from "ast-types/gen/kinds";
 
 const shouldRename = true;
 
@@ -53,11 +54,12 @@ const transform: Transform = (file, api, options) => {
   // Alias the jscodeshift API for ease of use.
   const j = api.jscodeshift;
 
-  const example1 = j("/\\x74\\u0072\\u0075\\x65/")
-    .find(j.Literal)
-    .replaceWith(({ value: { value } }) => j.literal(unescapeRegExp(value)));
-  // .forEach(x => console.log(x.value.raw = unescape(x.value.raw)))
-  console.log(example1.toSource());
+  // const example1 = j("/\\x74\\u0072\\u0075\\x65/")
+  //   .find(j.Literal)
+  //   .replaceWith(({ value: { value } }) => j.literal(unescapeRegExp(value)));
+  // // .forEach(x => console.log(x.value.raw = unescape(x.value.raw)))
+  // console.log(example1.toSource());
+
   // Convert the entire file source into a collection of nodes paths.
   Object;
   console.log("Parsing");
@@ -79,7 +81,7 @@ const transform: Transform = (file, api, options) => {
   });
   console.log(`Found ${decl.length} array declarations`);
 
-  function evalArray(dcl: Collection<VariableDeclarator>) {
+  function getArrayName(dcl: Collection<VariableDeclarator>) {
     if (dcl.length == 0) return;
     const fstArr = dcl.paths()[0];
     const fsn = fstArr.node;
@@ -89,25 +91,33 @@ const transform: Transform = (file, api, options) => {
     // This should be the first line of a program
     if (fstArr.parent.parent.node.type != "Program") return;
     // if (fstArr.parent.name != 0) return;
+    return name
+  }
+
+  function evalArray(dcl: Collection<VariableDeclarator>) {
+    const fstArr = dcl.paths()[0];
+    const name = getArrayName(dcl)
+    if (!name) return
 
     console.log("ready");
 
     // Find all uses of array
     const uses = root.find(j.Identifier, { name }).paths();
-    const topLevel: ASTPath[] = uses.map((use) => {
+    const topLevel = uses.map((use : ASTPath) => {
       while (use?.parent) {
         // console.log(use.parent.node.type)
-        if (use.parent.node.type == "Program") return use;
+        if (use.parent.node.type == "Program") return use as ASTPath<StatementKind>;
         use = use.parent;
       }
       console.log("failure", use);
     });
 
-    console.log(topLevel.map((x) => x.node.type));
+    // console.log(topLevel.map((x) => x.node.type));
     const lastIdx = topLevel
       .map((x) => +x.name)
       .reduce((x, y) => Math.max(x, y));
-    const newBody = fstArr.parent.parent.node.body.slice(0, lastIdx + 1);
+    // const newBody = fstArr.parent.parent.node.body.slice(0, lastIdx + 1);
+    const newBody = topLevel.map(x => x.node);
     newBody.push(j.returnStatement(j.identifier(name)));
     // console.log(lastIdx)
     // console.log(topLevel.map((x) => x?.name));
@@ -137,7 +147,7 @@ const transform: Transform = (file, api, options) => {
       (x) => x.node.expression.type == "CallExpression"
     );
     if (!transformer) return;
-    console.log(transformer);
+    // console.log(transformer);
     transformer.prune();
     return true;
   }
@@ -315,12 +325,42 @@ const transform: Transform = (file, api, options) => {
       }).length;
     console.log(`Inlined ${varisvar} aliases`);
   }
+
+  const arrayName = getArrayName(decl)
+
   // Simplify function return
   // const funs = root.find(j.FunctionDeclaration,{expression: false, body: {type: "BlockStatement"}})
   // let funBod = root.find(j.FunctionDeclaration).paths()[0].value.body.body
-  let funBod = root.find(j.FunctionDeclaration).forEach((fun, i) => {
-    // Only simplify the first function (since this transformation is fragile)
-    if (i > 0) return;
+  let funBod = root.find(j.FunctionDeclaration).filter(pth => {
+    return 0 < j(pth).find(j.MemberExpression, {object: {type: "Identifier", name: arrayName}}).length
+  }).forEach((fun, i) => {
+    // Part 0: Inlne nested functions
+    function inlineNested() {
+      console.log("Inlining nested")
+      const funName = fun.node.id.name
+      let stmts = fun.get("body", "body");
+      if (stmts.value.length != 1) return
+      const ret = stmts.value[0]
+      if(ret.type !== 'ReturnStatement') return
+      const sequence = ret.argument
+      if (sequence.type != 'SequenceExpression' || sequence.expressions.length != 2) return
+      const [funDecl, call] = sequence.expressions
+      if (!(call.type == 'CallExpression'
+        && call.callee.type == 'Identifier'
+        && call.callee.name == funName
+        && funDecl.type == 'AssignmentExpression'
+        && funDecl.left.type == 'Identifier'
+        && funDecl.left.name == funName
+        && funDecl.right.type == 'FunctionExpression' )) return
+      const innerFun = funDecl.right
+      console.log("Success: Inlining")
+      fun.get("params").replace(innerFun.params)
+      fun.get("body").replace(innerFun.body)
+    }
+    
+    inlineNested()
+
+    // Part 1: substitute variable declarator
     let stmts = fun.get("body", "body");
     let second_last = stmts.get(stmts.value.length - 2);
     // if (!j.VariableDeclaration.check(last.value)) return null
@@ -437,7 +477,7 @@ const transform: Transform = (file, api, options) => {
       if (expr1.type !== "ReturnStatement") return null;
       const retVal = expr1.argument;
       const retSrc = j(retVal).toSource();
-      console.log(retSrc, retSrc.length);
+      // console.log(retSrc, retSrc.length);
       if (retSrc.length > 30) return;
 
       const args = pth.value.params;
@@ -663,6 +703,11 @@ const transform: Transform = (file, api, options) => {
   // TODO: Handle bundler code (in a separate module):
   // * Rename export, import, etc function arguments to the standard names
   // * Give a number to each function to simplify lookup
+
+  // TODO: Make sure that lambda expressions don't lose their manditory parentheses
+  // (foo) => (a, b);
+  // should not become
+  // (foo) => a, b;
 
   // Alternative naming scheme: global3_fun7_var5
 
