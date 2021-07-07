@@ -1,6 +1,7 @@
 # Experiments with writing a js deobfuscator
 
 The code is in no way production ready, but I've managed to get some success out of it for myself.
+In particular, it is using `safe-eval` internally, as a simple way to unscramble the array before proceeding. So probably don't run this on malicious code.
 
 The main deobfuscator is `transformers/constant-fold.ts` (yes, bad name, I know) and can be run with:
 
