@@ -1,9 +1,13 @@
 fs = require("fs");
 
+// Experiment with decoding the obfuscation on jscrambler.com
+// Currently hard-coded with the key on the main-website
+
 Number.prototype.mod = function (n) {
   return ((this % n) + n) % n;
 };
 
+// Decoder with the specific key used in the js-file on jscrambler.com
 calcIdx = (a, w) => (+w - +15 * a).mod(48);
 
 // matcher = /[a-zA-Z0-9]*\.[Ir]8L\(\)\[([0-9]*)\]\[([0-9]*)\]\[([0-9]*)\]/g;
