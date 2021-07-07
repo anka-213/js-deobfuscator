@@ -30,12 +30,48 @@ import { Type } from "ast-types/lib/types";
 // =>
 // var Baz = require('foo/bar').Baz;
 
+// We could generalize this to not just requires:
+// var aaa = foo().bar;
+// =>
+// var bar = foo().bar;
+
 // Remember to check for duplicate names!
 // var v324 = require('foo/bar');
 // var v538 = require('baz/bar');
 // =>
 // var bar = require('foo/bar');
 // var bar1 = require('baz/bar');
+
+// More ideas:
+// When an object {foo: a, bar: b} is returned
+// we can rename a to foo and b to bar (just check that the name is not already used)
+
+// Similarly:
+// app.updatedDate = foo
+// =>
+// app.updatedDate = updatedDate
+
+// For Angular:
+// Figure out names based on dependency injection
+/*
+  nest3_arg1.controller("BaseCtrl", [
+    "$scope",
+    "$rootScope",
+    function (nest4_arg1, nest4_arg2) {
+        // ...
+    }
+])
+*/
+// =>
+/*
+  nest3_arg1.controller("BaseCtrl", [
+    "$scope",
+    "$rootScope",
+    function ($scope, $rootScope) {
+        // ...
+    }
+])
+*/
 
 const transform: Transform = (file, api, options) => {
   // Alias the jscodeshift API for ease of use.
@@ -60,7 +96,9 @@ const transform: Transform = (file, api, options) => {
         && init.arguments.length === 1
         && init.arguments[0].type === 'Literal'
         && typeof init.arguments[0].value === 'string')) return
-    const newName = init.arguments[0].value.replace(/[\/.@-]+/g,'_')
+    const newName = init.arguments[0].value
+        .replace(/[\/.@-]+/g,'_')
+        .replace(/^([0-9])/,'_$1')
     j(pth).renameTo(newName)
   })
   // vds.paths()[0].scope.declares("v3856")
