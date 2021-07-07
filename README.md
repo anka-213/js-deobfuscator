@@ -16,3 +16,10 @@ Warning: It can be very slow on large files (and use a lot of memory). I'm not c
 There are also a few other random transformations that I found useful, mostly for renaming.
 
 If the obfuscated file was a bundle, it can be very helpful to run it through a [debundler](https://github.com/anka-213/debundle).
+
+# Alternatives
+Here are a few other js deobfuscators
+* https://github.com/lelinhtinh/de4js
+* https://github.com/LostMyCode/javascript-deobfuscator
+* https://github.com/sd-soleaio/javascript-deobfuscator
+* https://github.com/uwu/synchrony
